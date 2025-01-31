@@ -93,6 +93,7 @@ function Register() {
           <div className="github">
             <img src={githubImage} className={styles.google_image} />
           </div>
+          
           <div className="facebook">
             <img src={facebookImage} className={styles.google_image} />
           </div> */}
