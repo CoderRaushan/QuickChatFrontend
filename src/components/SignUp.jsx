@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -12,7 +14,11 @@ import {
 import quickchatImg from "@/assets/quickchat.png"; // Adjust the path as necessary
 import GooglePhoto from "@/assets/SignUpLogin/google.png";
 import GitHubPhoto from "@/assets/SignUpLogin/github.png";
+import YoutubePhoto from "@/assets/SignUpLogin/youtube.webp";
+import { Loader2 } from "lucide-react";
 const SignupForm = () => {
+  const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -33,8 +39,10 @@ const SignupForm = () => {
 
   const handleGetCode = async (e) => {
     e.preventDefault();
+    setloading(true);
     if (!formData.username || !formData.email) {
-      alert("Please enter your username and email.");
+      toast.error("Please enter your username and email.");
+      setloading(false);
       return;
     }
     try {
@@ -45,24 +53,33 @@ const SignupForm = () => {
       const verificationUri = import.meta.env.VITE_VERIFYEMAIL;
       const response = await axios.post(verificationUri, verificationData);
       if (response.data.success) {
-        console.log(response.data.message);
+       
+        // console.log(response.data.message);
         setIsCodeSent(true);
         setUserDetails({
           username: formData.username,
           email: formData.email,
         });
-        alert(response.data.message);
+        // alert(response.data.message);
+
+        toast.success(response.data.message || "Messsage sent successfylly!");
       } else {
         console.log(response.data.message);
-        alert(response.data.message);
+        // alert(response.data.message);
+        toast.error(response.data.message || "Messsage sending error!");
       }
     } catch (error) {
       console.error("Error:", error.response.data.message);
-      alert("Error:", error.response.data.message);
+      toast.error(error.response.data.message || "Error sending message");
+    }
+    finally
+    {
+      setloading(false);
     }
   };
   const handleSignup = async (e) => {
     e.preventDefault();
+    setloading(true); // Set loading before API call
     if (
       !formData.verificationCode ||
       !formData.age ||
@@ -70,9 +87,11 @@ const SignupForm = () => {
       !formData.username ||
       !formData.email
     ) {
-      alert("Please fill all fields.");
+      toast.error("Please fill all fields.");
+      setloading(false);
       return;
     }
+    
     try {
       const userdata = {
         username: userDetails.username,
@@ -84,6 +103,7 @@ const SignupForm = () => {
       const signupUri = import.meta.env.VITE_signup;
       const response = await axios.post(signupUri, userdata);
       if (response.data.success) {
+        navigate("/signin");
         setFormData({
           username: "",
           email: "",
@@ -93,14 +113,20 @@ const SignupForm = () => {
         });
         setIsCodeSent(false);
         console.log(response.data.message);
-        alert(response.data.message);
+        // alert(response.data.message);
+        toast.success(response.data.message || "Signup successfylly!");
       } else {
         console.log(response.data.message);
-        alert(response.data.message);
+        // alert(response.data.message);
+        toast.error(response.data.message || "Signup error!");
       }
     } catch (error) {
       console.error("Error:", error.response.data.message);
-      alert("Error:", error.response.data.message);
+      // alert("Error:", error.response.data.message);
+      toast.error(error.response.data.message || "Error signing up");
+    }
+    finally{
+      setloading(false);
     }
   };
   const callGoogle = async (e) => {
@@ -112,6 +138,11 @@ const SignupForm = () => {
     const GoogleUri = import.meta.env.VITE_githubLOGIN;
     e.preventDefault();
     window.location.href = GoogleUri;
+  };
+  const callYoutube = async (e) => {
+    const youtubeUri = import.meta.env.VITE_youtubeLOGIN;
+    e.preventDefault();
+    window.location.href = youtubeUri;
   };
 
   return (
@@ -127,7 +158,7 @@ const SignupForm = () => {
         </CardHeader>
         <CardContent>
           {!isCodeSent ? (
-            <form onSubmit={handleGetCode}>
+            <form>
               <div className="space-y-4">
                 <div>
                   <label
@@ -160,9 +191,19 @@ const SignupForm = () => {
                     className="mt-1"
                   />
                 </div>
-                <Button className="w-full mt-4" type="submit">
-                  Get Verification Code
-                </Button>
+                {loading ? (
+                  <Button
+                    disabled
+                    className="flex items-center justify-center w-full"
+                  >
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please Wait!
+                  </Button>
+                ) : (
+                  <Button onClick={handleGetCode} className="w-full mt-4" type="submit">
+                    Get Verification Code
+                  </Button>
+                )}
                 <div className="flex flex-col space-y-4">
                   <Button
                     onClick={callGoogle}
@@ -178,6 +219,22 @@ const SignupForm = () => {
                     <img src={GitHubPhoto} className="w-6 h-6" alt="GitHub" />{" "}
                     Sign in with GitHub
                   </Button>
+                  <Button
+                    onClick={callYoutube}
+                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
+                  >
+                    <img src={YoutubePhoto} className="w-6 h-6" alt="GitHub" />{" "}
+                    Sign in with Youtube
+                  </Button>
+                  <span className="flex items-center justify-center">
+                    Already have an account?{" "}
+                    <Link
+                      to="/signin"
+                      className="text-blue-800 hover:underline"
+                    >
+                      Login
+                    </Link>
+                  </span>
                 </div>
               </div>
             </form>
@@ -249,6 +306,22 @@ const SignupForm = () => {
                     <img src={GitHubPhoto} className="w-6 h-6" alt="GitHub" />{" "}
                     Sign in with GitHub
                   </Button>
+                  <Button
+                    onClick={callYoutube}
+                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
+                  >
+                    <img src={YoutubePhoto} className="w-6 h-6" alt="GitHub" />{" "}
+                    Sign in with Youtube
+                  </Button>
+                  <span className="flex items-center justify-center">
+                    Already have an account?{" "}
+                    <Link
+                      to="/signin"
+                      className="text-blue-800 hover:underline"
+                    >
+                      Login
+                    </Link>
+                  </span>
                 </div>
               </div>
             </form>
