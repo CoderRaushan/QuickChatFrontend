@@ -51,8 +51,10 @@ const Navigate=useNavigate();
       console.log("Sending request to:", siginUri);
       console.log("User Data:", userdata);
   
-      const response = await axios.post(siginUri, userdata);
-  
+      const response = await axios.post(siginUri, userdata,{ 
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" }
+      });
       if (response.data.success) {
         Navigate("/");
         setFormData({ email: "", password: "" });
