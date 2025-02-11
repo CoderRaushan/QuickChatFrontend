@@ -6,7 +6,6 @@ function Posts() {
       <Post/>
       <Post/>
       <Post/>
-      
     </div>
   )
 }

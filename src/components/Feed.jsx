@@ -9,4 +9,4 @@ function Feed() {
   )
 }
 
-export default Feed
+export default Feed;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
@@ -6,7 +6,18 @@ import { Button } from "@/components/ui/button";
 import TestPost from "../assets/Test/post.jpg";
 import { FaHeart } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
+import CommentDialog from "./CommentDialog";
 function Post() {
+  const [text, setText] = useState("");
+  const [CommentOpen,setCommentOpen]=useState(false);
+  const changeEventHandler = (e) => {
+    const inputText = e.target.value;
+    if (inputText.trim()) {
+      setText(inputText);
+    } else {
+      setText("");
+    }
+  };
   return (
     <div className="my-8 w-full max-w-sm mx-auto cursor-pointer">
       <div className="flex items-center justify-between">
@@ -50,7 +61,7 @@ function Post() {
             size={"22px"}
             className="cursor-pointer hover:text-gray-600"
           />
-          <MessageCircle className="cursor-pointer hover:text-gray-600" />
+          <MessageCircle onClick={()=>setCommentOpen(true)} className="cursor-pointer hover:text-gray-600" />
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
         <Bookmark className="cursor-pointer hover:text-gray-600" />
@@ -60,11 +71,20 @@ function Post() {
         <span className="font-medium mr-2">username </span>
         caption
       </p>
-      <span>view all 10 comments</span>
-      {/* done till 5:16 */}
+      <span onClick={()=>setCommentOpen(true)}>view all 10 comments</span>
+      <CommentDialog CommentOpen={CommentOpen}  setCommentOpen={setCommentOpen}/>
+      <div className="flex items-center justify-between">
+        <input
+          type="text"
+          placeholder="Add a comment..."
+          className="outline-none text-sm w-full"
+          value={text}
+          onChange={changeEventHandler}
+        />
+        {text && <span className="text-[#3BA0F8]">Post</span>}
+      </div>
     </div>
   );
-}git commit -m"added feed ,rightSideBar  posts and post components";
-
+}
 
 export default Post;
