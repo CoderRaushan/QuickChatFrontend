@@ -1,15 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent,DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import TestPost from "../assets/Test/post.jpg";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
-function CommentDialog({ CommentOpen, setCommentOpen }) {
+import { Button } from "@/components/ui/button";
+function CommentDialog({ CommentOpen, setCommentOpen }) 
+{
+  const [commentText,setcommentText]=useState("")
+  const changeEventHandler = (e) => 
+  {
+    const inputText = e.target.value;
+    if (inputText.trim()) 
+    {
+      setcommentText(inputText);
+    }
+  };
+  const SendCommentHandler=async()=>
+  {
+    alert(commentText);
+  }
   return (
     <Dialog open={CommentOpen}>
       <DialogContent
         onInteractOutside={() => setCommentOpen(false)}
-        className="max-w-5x1 p-0 flex flex-col"
+        className="max-w-5xl p-0 flex flex-col"
       >
         <div className="flex flex-1">
           <div className="w-1/2">
@@ -44,6 +59,21 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
                   <div className="cursor-pointer w-full">Add to favorites</div>
                 </DialogContent>
               </Dialog>
+            </div>
+            <hr />
+            <div className="flex-1 overflow-y-auto max-h-96 p-4">
+              comments ayenge
+            </div>
+            <div className="p-4">
+              <div className="flex item-center gap-2">
+                <input
+                  type="text"
+                  onChange={changeEventHandler}
+                  placeholder="Add a comment...."
+                  className="w-full outline-none border border-gray-300 p-2 rounded"
+                />
+                <Button disabled={!commentText} onClick={SendCommentHandler} variant="outline">Post</Button>
+              </div>
             </div>
           </div>
         </div>

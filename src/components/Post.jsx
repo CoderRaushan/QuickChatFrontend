@@ -68,7 +68,7 @@ function Post() {
       </div>
       <span className="font-medium block mb-2">1k likes</span>
       <p>
-        <span className="font-medium mr-2">username </span>
+        <span className="font-medium mr-2">username</span>
         caption
       </p>
       <span onClick={()=>setCommentOpen(true)}>view all 10 comments</span>
