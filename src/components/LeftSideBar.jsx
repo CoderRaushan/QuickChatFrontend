@@ -9,16 +9,22 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setAuthUser } from "../ReduxStore/authSlice";
-
+import CreatePost from "./CreatePost.jsx";
 function LeftSideBar() {
   const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch=useDispatch();
+  const [createPostOpen,setcreatePostOpen]=useState(false);
+
+  const CreatePostHandler=()=>
+  {
+    setcreatePostOpen(true);
+  }
   const handleLogout = async () => {
     const logoutUri = import.meta.env.VITE_logout;
     try {
@@ -44,6 +50,8 @@ function LeftSideBar() {
     switch (text) {
       case "Logout":
         return handleLogout();
+      case "Create":
+        return CreatePostHandler();
       // case "Home":
       //   return navigate("/");
       // case "Search":
@@ -101,6 +109,7 @@ function LeftSideBar() {
           </div>
         ))}
       </div>
+      <CreatePost createPostOpen={createPostOpen} setcreatePostOpen={setcreatePostOpen}/>
     </div>
   );
 }
