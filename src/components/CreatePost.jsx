@@ -45,9 +45,11 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
             toast.error(res.data.message || "post failed");
         }
     } catch (error) {
-        toast.error(error.res.data.message || "post falied");
+      console.log();
+        toast.error(error.response.data.message || "post falied");
     }finally{
         setloading(false);
+        setcreatePostOpen(false);
     }
   };
   return (
@@ -87,6 +89,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
           ref={imageRef}
           type="file"
           className="hidden"
+          name="image"
           onChange={filechangeHanlder}
         />
         <Button
