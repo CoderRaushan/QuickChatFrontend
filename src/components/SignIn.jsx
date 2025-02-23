@@ -54,8 +54,8 @@ const Navigate=useNavigate();
       };
   
       const siginUri = import.meta.env.VITE_login;
-      console.log("Sending request to:", siginUri);
-      console.log("User Data:", userdata);
+      // console.log("Sending request to:", siginUri);
+      // console.log("User Data:", userdata);
   
       const response = await axios.post(siginUri, userdata,{ 
         withCredentials: true,

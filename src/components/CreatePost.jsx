@@ -8,12 +8,16 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Loader2, Turtle } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { setPosts } from "../ReduxStore/PostSlice.js";
 function CreatePost({ createPostOpen, setcreatePostOpen }) {
   const imageRef = useRef();
   const [file, setfile] = useState("");
   const [caption, setcaption] = useState("");
   const [ImagePreview, setImagePreview] = useState("");
   const [loading, setloading] = useState(false);
+  const dispatch=useDispatch();
+  const {post}=useSelector(store=>store.post);
   const filechangeHanlder = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -35,9 +39,10 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials:true
         });
-        console.log(res);
+        // console.log(res);
         if(res.data.success)
         {
+         dispatch(setPosts([res.data.post,...post]));
          toast.success(res.data.message || "post successfully");
         }
         else 

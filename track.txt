@@ -1,0 +1,2 @@
+7:8
+post delete ke baad automatically hat nahi raha hai posts se wo thik karna hai 

@@ -82,14 +82,14 @@ function LeftSideBar() {
       icon: (
         <Avatar>
           <AvatarImage
-            src={user?.logedinUser?.profilePicture || ""}
+            src={user?.user?.profilePicture || ""}
             alt="User Profile"
             className="h-10 w-10 rounded-lg"
           />
-          <AvatarFallback>{user?.logedinUser?.name?.charAt(0) || "U"}</AvatarFallback>
+          <AvatarFallback>{user?.user?.name?.charAt(0) || "U"}</AvatarFallback>
         </Avatar>
       ),
-      text:user?.logedinUser?.name || "",
+      text:user?.user?.name || "",
     },
     { icon: <LogOutIcon />, text: "Logout" },
   ];

@@ -1,15 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import TestPost from "../assets/Test/post.jpg";
 import { FaHeart } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
-function Post() {
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { setlike } from "../ReduxStore/likeSlice";
+function Post({ post }) {
+  const { like } = useSelector((store) => store.like);
+  const { user } = useSelector((store) => store.auth);
+  const Posts= useSelector((store) => store.post);
+  const dispatch = useDispatch();
   const [text, setText] = useState("");
-  const [CommentOpen,setCommentOpen]=useState(false);
+  const [CommentOpen, setCommentOpen] = useState(false);
+  const [ThreeDotOpen, setThreeDotOpen] = useState(false);
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -18,23 +26,94 @@ function Post() {
       setText("");
     }
   };
+  const HandleLikePost = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:7464/user/post/${post._id}/like`,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        dispatch(setlike(true));
+        toast.success(response.data.message || "Post Liked!");
+      } else {
+        toast.error(response.data.message || "Post Like Failed");
+        dispatch(setlike(false));
+      }
+    } catch (error) {
+      dispatch(setlike(false));
+      toast.error(error.response.data.message || "Internal Server Error");
+    }
+  };
+  const HandleDisLikePost = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:7464/user/post/${post._id}/dislike`,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        dispatch(setlike(false));
+        toast.success(response.data.message || "Post DisLiked!");
+      } else {
+        dispatch(setlike(false));
+        toast.error(response.data.message || "Post DisLik Failed");
+      }
+    } catch (error) {
+      dispatch(setlike(false));
+      toast.error(error.response.data.message || "Internal Server Error");
+    }
+  };
+  const HandleDeletePost=async()=>
+  {
+    const deleteUri=`http://localhost:7464/user/post/delete/${post._id}`;
+    console.log(deleteUri)
+   try {
+    const response=await axios.delete(deleteUri,{
+      headers:{
+        'Content-Type':'application/json'
+      },
+      withCredentials:true
+    })
+    // console.log(response);
+    if(response.data.success)
+    {
+      setThreeDotOpen(false);
+      const OriginalPosts=Posts.post.filter((Eachpost)=>Eachpost._id!== post._id);
+      dispatch(setPosts(OriginalPosts));
+      toast.success(response.data.message || "Post Deleted!");
+    }
+    else 
+    {
+      toast.error(response.data.message || "Post Delete Failed");
+    }
+   } catch (error) {
+    toast.error(error.response.data.message || "Internal Server Error!");
+   }
+  }
   return (
     <div className="my-8 w-full max-w-sm mx-auto cursor-pointer">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src="" alt="User Avatar" />
+            <AvatarImage src={post.author.profilePicture} alt="User Avatar" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1 className="text-lg font-semibold">Username</h1>
+          <h1 className="text-lg font-semibold">{post.author.username}</h1>
         </div>
-        <Dialog>
+        <Dialog open={ThreeDotOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" className="p-2">
-              <MoreHorizontal className="cursor-pointer" />
+            <Button onClick={()=>setThreeDotOpen(true)}  variant="ghost" className="p-2">
+              <MoreHorizontal onClick={()=>setThreeDotOpen(true)} className="cursor-pointer" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="flex flex-col items-center text-sm text-center">
+          <DialogContent 
+             onInteractOutside={() =>setThreeDotOpen(false)}
+             className="flex flex-col items-center text-sm text-center">
             <Button
               variant="ghost"
               className="cursor-pointer w-full text-red-500 font-bold"
@@ -44,35 +123,54 @@ function Post() {
             <Button variant="ghost" className="cursor-pointer w-full">
               Add to Favorites
             </Button>
-            <Button variant="ghost" className="cursor-pointer w-full">
-              Delete
-            </Button>
+            {user && user.user._id === post.author._id && (
+              <Button onClick={HandleDeletePost} variant="ghost" className="cursor-pointer w-full">
+                Delete
+              </Button>
+            )}
           </DialogContent>
         </Dialog>
       </div>
       <img
         className="rounded-sm my-2 w-full aspect-square object-cover"
-        src={TestPost}
+        src={post.image}
         alt=""
       />
       <div className="flex justify-between">
         <div className="flex gap-3">
-          <FaRegHeart
-            size={"22px"}
+          {like ? (
+            <FaHeart
+              onClick={HandleDisLikePost} // Call HandleDisLikePost when liked
+              size={"22px"}
+              className="cursor-pointer text-red-500 hover:text-gray-600"
+            />
+          ) : (
+            <FaRegHeart
+              onClick={HandleLikePost} // Call HandleLikePost when not liked
+              size={"22px"}
+              className="cursor-pointer hover:text-gray-600"
+            />
+          )}
+          <MessageCircle
+            onClick={() => setCommentOpen(true)}
             className="cursor-pointer hover:text-gray-600"
           />
-          <MessageCircle onClick={()=>setCommentOpen(true)} className="cursor-pointer hover:text-gray-600" />
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
         <Bookmark className="cursor-pointer hover:text-gray-600" />
       </div>
-      <span className="font-medium block mb-2">1k likes</span>
+      <span className="font-medium block mb-2">{post.likes.length} likes</span>
       <p>
-        <span className="font-medium mr-2">username</span>
-        caption
+        <span className="font-medium mr-2">{post.author.username}</span>
+        {post.caption}
       </p>
-      <span onClick={()=>setCommentOpen(true)}>view all 10 comments</span>
-      <CommentDialog CommentOpen={CommentOpen}  setCommentOpen={setCommentOpen}/>
+      <span onClick={() => setCommentOpen(true)}>
+        view all {post.comments.length} comments
+      </span>
+      <CommentDialog
+        CommentOpen={CommentOpen}
+        setCommentOpen={setCommentOpen}
+      />
       <div className="flex items-center justify-between">
         <input
           type="text"
