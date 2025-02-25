@@ -11,16 +11,18 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setAuthUser } from "../ReduxStore/authSlice";
 import CreatePost from "./CreatePost.jsx";
+import { setisLogin } from "../ReduxStore/LoginSlice.js";
 function LeftSideBar() {
   const { user } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
+  const navigate =useNavigate();
   const dispatch=useDispatch();
   const [createPostOpen,setcreatePostOpen]=useState(false);
-
+  const {isLogin}=useSelector((store)=>store.isLogin);
+  console.log(isLogin)
   const CreatePostHandler=()=>
   {
     setcreatePostOpen(true);
@@ -49,9 +51,12 @@ function LeftSideBar() {
   const SideBarClickHandler = (text) => {
     switch (text) {
       case "Logout":
+        dispatch(setisLogin(false));
         return handleLogout();
       case "Create":
         return CreatePostHandler();
+      case "Login":
+        return  navigate("/signin");
       // case "Home":
       //   return navigate("/");
       // case "Search":
@@ -86,12 +91,12 @@ function LeftSideBar() {
             alt="User Profile"
             className="h-10 w-10 rounded-lg"
           />
-          <AvatarFallback>{user?.user?.name?.charAt(0) || "U"}</AvatarFallback>
+          <AvatarFallback>{user?.user?.name?.charAt(0) || "username"}</AvatarFallback>
         </Avatar>
       ),
       text:user?.user?.name || "",
     },
-    { icon: <LogOutIcon />, text: "Logout" },
+    { icon:<LogOutIcon /> , text:isLogin ? "Logout": "Login" },
   ];
 
   return (

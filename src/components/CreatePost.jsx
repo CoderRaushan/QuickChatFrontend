@@ -18,6 +18,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
   const [loading, setloading] = useState(false);
   const dispatch=useDispatch();
   const {post}=useSelector(store=>store.post);
+  const {user}=useSelector(store=>store.auth);
   const filechangeHanlder = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -39,7 +40,6 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials:true
         });
-        // console.log(res);
         if(res.data.success)
         {
          dispatch(setPosts([res.data.post,...post]));
@@ -50,7 +50,6 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
             toast.error(res.data.message || "post failed");
         }
     } catch (error) {
-      console.log();
         toast.error(error.response.data.message || "post falied");
     }finally{
         setloading(false);
@@ -67,12 +66,12 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         </VisuallyHidden>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage src="your-image-src-here" alt="User Avatar" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage className="w-10 h-10 rounded-full" src={user?.user?.profilePicture} alt="User Avatar" />
+            <AvatarFallback>{user?.user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">Username</h1>
-            <span className="text-gray-600 text-xs">Bio here...</span>
+            <h1 className="font-semibold text-xs">{user?.user?.name || "username"}</h1>
+            <span className="text-gray-600 text-xs">{user?.user?.bio}</span>
           </div>
         </div>
         <Textarea

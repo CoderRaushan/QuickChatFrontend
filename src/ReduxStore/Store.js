@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "./authSlice.js";
 import PostSlice from "./PostSlice.js";
-import likeSlice from "./likeSlice.js";
+import setisLogin from "./LoginSlice.js";
 import {
   persistReducer,
   FLUSH,
@@ -23,7 +23,7 @@ const persistConfig = {
 const rootReducer=combineReducers({
 auth:authSlice, 
 post:PostSlice,
-like:likeSlice,
+isLogin:setisLogin
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

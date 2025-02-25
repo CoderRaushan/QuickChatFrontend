@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import TestPost from "../assets/Test/post.jpg";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-function CommentDialog({ CommentOpen, setCommentOpen }) 
+import { useSelector } from "react-redux";
+function CommentDialog({ CommentOpen, setCommentOpen,post }) 
 {
-  const [commentText,setcommentText]=useState("")
+  const [commentText,setcommentText]=useState("");
+  const {user}=useSelector(store=>store.auth);
   const changeEventHandler = (e) => 
   {
     const inputText = e.target.value;
@@ -29,7 +30,7 @@ function CommentDialog({ CommentOpen, setCommentOpen })
         <div className="flex flex-1">
           <div className="w-1/2">
             <img
-              src={TestPost}
+              src={post?.image}
               alt="post_img"
               className="w-full h-full object-cover rounded-l-lg"
             />
@@ -39,13 +40,13 @@ function CommentDialog({ CommentOpen, setCommentOpen })
               <div className="flex gap-3 items-center">
                 <Link>
                   <Avatar>
-                    <AvatarImage src="" />
+                    <AvatarImage src={user?.user?.profilePicture}/>
                     <AvatarFallback>cn</AvatarFallback>
                   </Avatar>
                 </Link>
-                <div>
-                  <Link className="font-semibold text-xs">username</Link>
-                  {/* <span>Bio here....</span> */}
+                <div className="flex flex-col">
+                  <Link className="font-semibold text-base">{user?.user?.name||"username"}</Link>
+                  <span className="text-sm">{user?.user?.bio}</span>
                 </div>
               </div>
               <Dialog>
@@ -62,7 +63,7 @@ function CommentDialog({ CommentOpen, setCommentOpen })
             </div>
             <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-4">
-              comments ayenge
+            {post?.comments?.text}
             </div>
             <div className="p-4">
               <div className="flex item-center gap-2">

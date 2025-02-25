@@ -16,8 +16,9 @@ import YoutubePhoto from "@/assets/SignUpLogin/youtube.webp";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "../ReduxStore/authSlice";
+import {setisLogin} from "../ReduxStore/LoginSlice.js";
 
 const SignIn = () => {
 const Navigate=useNavigate();
@@ -27,7 +28,8 @@ const Navigate=useNavigate();
   });
 
   const dispatch=useDispatch();
-
+    const {isLogin}=useSelector((store)=>store.isLogin);
+    console.log(isLogin)
   const [loading, setloading] = useState(false);
   // const [Verified, setVerified] = useState(false);
   const handleChange = (e) => {
@@ -62,6 +64,7 @@ const Navigate=useNavigate();
         headers: { "Content-Type": "application/json" }
       });
       if (response.data.success) {
+        dispatch(setisLogin(true));
         Navigate("/");
         dispatch(setAuthUser(response.data));//sending to redux store 
         setFormData({ email: "", password: "" });

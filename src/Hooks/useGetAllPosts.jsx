@@ -19,7 +19,7 @@ function useGetAllPosts()
                 if(response.data.success)
                 {
                     dispatch(setPosts(response.data.posts));
-                    toast.success(response.data.message || "Posts Fetched Successfully!");
+                    // toast.success(response.data.message || "Posts Fetched Successfully!");
                 }
                 else 
                 {
