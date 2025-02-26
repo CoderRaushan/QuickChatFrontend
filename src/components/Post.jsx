@@ -9,7 +9,7 @@ import CommentDialog from "./CommentDialog";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts } from "../ReduxStore/PostSlice";
+import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice";
 function Post({ post }) {
   const { user } = useSelector((store) => store.auth);
   const Posts = useSelector((store) => store.post);
@@ -17,8 +17,9 @@ function Post({ post }) {
   const [text, setText] = useState("");
   const [CommentOpen, setCommentOpen] = useState(false);
   const [ThreeDotOpen, setThreeDotOpen] = useState(false);
-  const [like,setlike]=useState(post.likes.includes(post._id));
-  const [likeCount,setlikeCount]=useState(post.likes.length);
+  const [like, setlike] = useState(post?.likes?.includes(user?.user?._id));
+  const [likeCount, setlikeCount] = useState(post?.likes?.length);
+  const [CommentData, setCommentData] = useState(post.comments);
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -29,7 +30,7 @@ function Post({ post }) {
   };
   const HandleLikeAndDislikePost = async () => {
     try {
-      const action=like?"dislike":"like";
+      const action = like ? "dislike" : "like";
       const response = await axios.get(
         `http://localhost:7464/user/post/${post._id}/${action}`,
         {
@@ -37,22 +38,22 @@ function Post({ post }) {
           withCredentials: true,
         }
       );
-      if (response.data.success) {  
-        const updatedlikes=like?likeCount-1:likeCount+1;
+      if (response.data.success) {
+        const updatedlikes = like ? likeCount - 1 : likeCount + 1;
         setlike(!like);
         setlikeCount(updatedlikes);
-
-        const updatedpost = Posts.map(p => 
-          p._id === post._id 
+        const updatedpost = Posts.post.map((p) =>
+          p._id === post._id
             ? {
                 ...p,
-                likes: like 
-                  ? p.likes.filter((id) => id !== user._id) 
-                  : [...p.likes, user._id] 
+                likes: like
+                  ? p.likes.filter((id) => id !== user.user._id)
+                  : [...p.likes, user.user._id],
               }
             : p
         );
         dispatch(setPosts(updatedpost));
+        console.log(updatedpost);
         toast.success(response.data.message || "Post Liked!");
       } else {
         toast.error(response.data.message || "Post Like Failed");
@@ -61,7 +62,34 @@ function Post({ post }) {
       toast.error(error.response.data.message || "Internal Server Error");
     }
   };
-
+  const HandleCommentPost = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:7464/user/post/${post._id}/comment`,
+        { text },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        setCommentData([...CommentData, response.data.comment]);
+        setText("");
+        const updatedpost = Posts.post.map((p) =>
+          p._id === post._id
+            ? {
+                ...p,
+                comments: [...p.comments, response.data.comment],
+              }
+            : p
+        );
+        dispatch(setPosts(updatedpost));
+        toast.success(response.data.message || "Comment Added!");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message || "Internal Server Error");
+    }
+  };
   const HandleDeletePost = async () => {
     const deleteUri = `http://localhost:7464/user/post/delete/${post._id}`;
     console.log(deleteUri);
@@ -141,13 +169,24 @@ function Post({ post }) {
       />
       <div className="flex justify-between">
         <div className="flex gap-3">
-          <FaRegHeart
-            onClick={HandleLikeAndDislikePost}
-            size={"22px"}
-            className="cursor-pointer hover:text-gray-600"
-          />
+          {like ? (
+            <FaHeart
+              onClick={HandleLikeAndDislikePost}
+              size={"22px"}
+              className="cursor-pointer text-red-600"
+            />
+          ) : (
+            <FaRegHeart
+              onClick={HandleLikeAndDislikePost}
+              size={"22px"}
+              className="cursor-pointer hover:text-gray-600"
+            />
+          )}
           <MessageCircle
-            onClick={() => setCommentOpen(true)}
+            onClick={() => {
+              dispatch(setSelectedPost(post));
+              setCommentOpen(true);
+            }}
             className="cursor-pointer hover:text-gray-600"
           />
           <Send className="cursor-pointer hover:text-gray-600" />
@@ -159,13 +198,17 @@ function Post({ post }) {
         <span className="font-medium mr-2">{post.author.username}</span>
         {post.caption}
       </p>
-      <span onClick={() => setCommentOpen(true)}>
+      <span
+        onClick={() => {
+          dispatch(setSelectedPost(post));
+          setCommentOpen(true);
+        }}  
+      >
         view all {post.comments.length} comments
       </span>
       <CommentDialog
         CommentOpen={CommentOpen}
         setCommentOpen={setCommentOpen}
-        post={post}
       />
       <div className="flex items-center justify-between">
         <input
@@ -175,7 +218,11 @@ function Post({ post }) {
           value={text}
           onChange={changeEventHandler}
         />
-        {text && <span className="text-[#3BA0F8]">Post</span>}
+        {text && (
+          <span onClick={HandleCommentPost} className="text-[#3BA0F8]">
+            Post
+          </span>
+        )}
       </div>
     </div>
   );

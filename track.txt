@@ -1,5 +1,2 @@
-7:26
-like karne ke baad fontend side se posts ko 
-update kar rahe hai using map and 
-filter but ye work  nahi kar raha hai dekh lena isko
-post.jsx line no:45
+7:48
+comment compnent me text with user name shaow karna hai 
