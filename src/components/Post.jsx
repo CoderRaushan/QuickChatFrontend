@@ -10,6 +10,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice";
+import { Badge } from "@/components/ui/badge"
 function Post({ post }) {
   const { user } = useSelector((store) => store.auth);
   const Posts = useSelector((store) => store.post);
@@ -53,7 +54,6 @@ function Post({ post }) {
             : p
         );
         dispatch(setPosts(updatedpost));
-        console.log(updatedpost);
         toast.success(response.data.message || "Post Liked!");
       } else {
         toast.error(response.data.message || "Post Like Failed");
@@ -92,7 +92,6 @@ function Post({ post }) {
   };
   const HandleDeletePost = async () => {
     const deleteUri = `http://localhost:7464/user/post/delete/${post._id}`;
-    console.log(deleteUri);
     try {
       const response = await axios.delete(deleteUri, {
         headers: {
@@ -122,7 +121,12 @@ function Post({ post }) {
             <AvatarImage src={post.author.profilePicture} alt="User Avatar" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
+          <div className="flex item-center gap-3">
           <h1 className="text-lg font-semibold">{post.author.username}</h1>
+           {
+            user?.user?._id === post?.author?._id && <Badge variant="secondary">Author</Badge>
+           }
+          </div>
         </div>
         <Dialog open={ThreeDotOpen}>
           <DialogTrigger asChild>
