@@ -22,7 +22,6 @@ function LeftSideBar() {
   const dispatch=useDispatch();
   const [createPostOpen,setcreatePostOpen]=useState(false);
   const {isLogin}=useSelector((store)=>store.isLogin);
-  console.log(isLogin)
   const CreatePostHandler=()=>
   {
     setcreatePostOpen(true);
@@ -57,8 +56,8 @@ function LeftSideBar() {
         return CreatePostHandler();
       case "Login":
         return  navigate("/signin");
-      // case "Home":
-      //   return navigate("/");
+      case "Home":
+        return navigate("/");
       // case "Search":
       //   return navigate("/search");
       // case "Explore":
@@ -69,8 +68,8 @@ function LeftSideBar() {
       //   return navigate("/notifications");
       // case "Create":
       //   return navigate("/create");
-      // case "Profile":
-      //   return navigate("/profile");
+      case "Profile":
+        return navigate(`/profile/${user?.user?._id}`);
       default:
         return;
     }
@@ -87,14 +86,14 @@ function LeftSideBar() {
       icon: (
         <Avatar>
           <AvatarImage
-            src={user?.user?.profilePicture || ""}
+            src={user?.user?.profilePicture }
             alt="User Profile"
             className="h-10 w-10 rounded-lg"
           />
-          <AvatarFallback>{user?.user?.name?.charAt(0) || "username"}</AvatarFallback>
+          <AvatarFallback>{user?.user?.name?.charAt(0) || ""}</AvatarFallback>
         </Avatar>
       ),
-      text:user?.user?.name || "",
+      text:"Profile",
     },
     { icon:<LogOutIcon /> , text:isLogin ? "Logout": "Login" },
   ];

@@ -1,21 +1,25 @@
 import "./App.css";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import SignUp from "./components/SignUp.jsx";
-// import Register from "./components/Register.jsx";
+import Profile from "./components/Profile.jsx";
 import SignIn from "./components/SignIn.jsx";
 import LeftSideBar from "./components/LeftSideBar.jsx";
-import  Home  from "./components/Home.jsx";
+import Home from "./components/Home.jsx";
+
 function App() {
-  
   return (
     <BrowserRouter>
-      <Routes>
-        {/* <Route path="/" element={<Register/>} /> */}
-        <Route path="/" element={<Home/>} />
-        <Route path="/leftsidebar" element={<LeftSideBar/>} />
-        <Route path="/signup" element={<SignUp/>} />
-        <Route path="/signin" element={<SignIn/>} />
-      </Routes>
+      <div style={{ display: "flex" }}> 
+        <LeftSideBar /> 
+        <div style={{ flex: 1 }}> 
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/profile/:id" element={<Profile />} />
+          </Routes>
+        </div>
+      </div>
     </BrowserRouter>
   );
 }

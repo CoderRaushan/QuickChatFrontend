@@ -1,7 +1,7 @@
 
 import React from 'react'
 import LeftSideBar from './LeftSideBar'
-import Feed from './Feed'
+import Feed from './Feed.jsx'
 import RightSideBar from './RightSideBar'
 import useGetAllPosts from '../Hooks/useGetAllPosts.jsx';
 import useGetAllSuggestedUsers from '../Hooks/useGetAllSuggestedUsers.jsx';
@@ -10,7 +10,6 @@ function Home() {
   useGetAllSuggestedUsers();
   return (
     <div className='flex'>
-      Home
       <LeftSideBar/>
       <Feed/>
       <RightSideBar/>
