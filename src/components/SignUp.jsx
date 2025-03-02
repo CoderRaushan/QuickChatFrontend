@@ -21,6 +21,7 @@ const SignupForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
+    name:"",
     email: "",
     verificationCode: "",
     age: "",
@@ -85,7 +86,8 @@ const SignupForm = () => {
       !formData.age ||
       !formData.password ||
       !formData.username ||
-      !formData.email
+      !formData.email ||
+      !formData.name
     ) {
       toast.error("Please fill all fields.");
       setloading(false);
@@ -99,6 +101,7 @@ const SignupForm = () => {
         Varcode: formData.verificationCode,
         age: formData.age,
         password: formData.password,
+        name:formData.name,
       };
       const signupUri = import.meta.env.VITE_signup;
       const response = await axios.post(signupUri, userdata);
@@ -110,6 +113,7 @@ const SignupForm = () => {
           verificationCode: "",
           age: "",
           password: "",
+          name:"",
         });
         setIsCodeSent(false);
         console.log(response.data.message);
@@ -160,6 +164,21 @@ const SignupForm = () => {
           {!isCodeSent ? (
             <form>
               <div className="space-y-4">
+              <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Name
+                  </label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="mt-1"
+                  />
+                </div>
                 <div>
                   <label
                     htmlFor="username"

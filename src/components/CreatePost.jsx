@@ -67,10 +67,10 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         <div className="flex gap-3 items-center">
           <Avatar>
             <AvatarImage className="w-10 h-10 rounded-full" src={user?.user?.profilePicture} alt="User Avatar" />
-            <AvatarFallback>{user?.user?.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">{user?.user?.name || "username"}</h1>
+            <h1 className="font-semibold text-xs">{user?.user?.username || "username"}</h1>
             <span className="text-gray-600 text-xs">{user?.user?.bio}</span>
           </div>
         </div>

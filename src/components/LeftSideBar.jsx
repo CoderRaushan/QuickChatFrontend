@@ -18,7 +18,7 @@ import CreatePost from "./CreatePost.jsx";
 import { setisLogin } from "../ReduxStore/LoginSlice.js";
 function LeftSideBar() {
   const { user } = useSelector((store) => store.auth);
-  const navigate =useNavigate();
+  const navigate = useNavigate();
   const dispatch=useDispatch();
   const [createPostOpen,setcreatePostOpen]=useState(false);
   const {isLogin}=useSelector((store)=>store.isLogin);
@@ -90,7 +90,7 @@ function LeftSideBar() {
             alt="User Profile"
             className="h-10 w-10 rounded-lg"
           />
-          <AvatarFallback>{user?.user?.name?.charAt(0) || ""}</AvatarFallback>
+          <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       ),
       text:"Profile",

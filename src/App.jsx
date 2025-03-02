@@ -5,6 +5,7 @@ import Profile from "./components/Profile.jsx";
 import SignIn from "./components/SignIn.jsx";
 import LeftSideBar from "./components/LeftSideBar.jsx";
 import Home from "./components/Home.jsx";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function App() {
   return (

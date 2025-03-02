@@ -11,12 +11,12 @@ function RightSideBar() {
         <Link to={`/profile/${user?.user?._id}`}>
           <Avatar>
             <AvatarImage src={user?.user?.profilePicture} />
-            <AvatarFallback>{user?.user?.name[0]}</AvatarFallback>
+            <AvatarFallback>{user?.user?.username[0]}</AvatarFallback>
           </Avatar>
         </Link>
         <div>
           <h1 className="font-semibold text-sm">
-            <Link to={`/profile/${user?.user?._id}`}>{user?.user?.name}</Link>
+            <Link to={`/profile/${user?.user?._id}`}>{user?.user?.username}</Link>
           </h1>
           <span className="text-gray-600 text-sm">{user?.user?.bio || "Bio here..."}</span>
         </div>
