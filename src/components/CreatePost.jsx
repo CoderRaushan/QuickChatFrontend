@@ -43,6 +43,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         if(res.data.success)
         {
          dispatch(setPosts([res.data.post,...post]));
+         
          toast.success(res.data.message || "post successfully");
         }
         else 

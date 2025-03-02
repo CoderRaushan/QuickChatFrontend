@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger,DialogTitle,DialogDescription } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,31 +9,31 @@ import Comment from "./Comment.jsx";
 import axios from "axios";
 import { setPosts } from "../ReduxStore/PostSlice.js";
 import { toast } from "react-toastify";
-function CommentDialog({ CommentOpen, setCommentOpen }) {
+function PostDialog({ PostOpen, setPostOpen,post }) {
   const [commentText, setcommentText] = useState("");
-  const { SelectedPost } = useSelector((store) => store.post);
+//   const { SelectedPost } = useSelector((store) => store.post);
   const Posts = useSelector((store) => store.post);
-  const dispatch = useDispatch();
-  const [CommentData, setCommentData] = useState([]);
+  const dispatch=useDispatch();
+  const [CommentData,setCommentData]=useState([]);
   useEffect(() => {
     setCommentData(SelectedPost.comments);
   }, [SelectedPost]);
-
+  
   const changeEventHandler = (e) => {
     setcommentText(e.target.value);
   };
   const SendCommentHandler = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:7464/user/post/${SelectedPost._id}/comment`,
-        { text: commentText },
+        `http://localhost:7464/user/post/${post._id}/comment`,
+        { text:commentText },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
       if (response.data.success) {
-        setCommentData([...CommentData, response.data.comment]);
+        setCommentData([...post, response.data.comment]);
         setcommentText("");
         const updatedpost = Posts.post.map((p) =>
           p._id === SelectedPost._id
@@ -59,7 +53,7 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
   return (
     <Dialog open={CommentOpen}>
       <DialogContent
-        onInteractOutside={() => setCommentOpen(false)}
+        onInteractOutside={() => setPostOpen(false)}
         className="max-w-5xl p-0 flex flex-col"
       >
         {/* Add DialogTitle for accessibility */}
@@ -70,7 +64,7 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
         <div className="flex flex-1">
           <div className="w-1/2">
             <img
-              src={SelectedPost?.image}
+              src={post?.image}
               alt="post_img"
               className="w-full h-full object-cover rounded-l-lg"
             />
@@ -80,14 +74,15 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
               <div className="flex gap-3 items-center">
                 <Link>
                   <Avatar>
-                    <AvatarImage src={SelectedPost?.author?.profilePicture} />
+                    <AvatarImage src={post?.author?.profilePicture} />
                     <AvatarFallback>cn</AvatarFallback>
                   </Avatar>
                 </Link>
                 <div className="flex flex-col">
                   <Link className="font-semibold text-base">
-                    {SelectedPost?.author?.username || "username"}
+                    {post?.author?.username || "username"}
                   </Link>
+                  <span className="text-sm">{SelectedPost?.author?.bio}</span>
                 </div>
               </div>
               <Dialog>
@@ -104,21 +99,8 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
             </div>
             <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-4">
-              <div className="flex gap-3 items-center">
-                <Link>
-                  <Avatar>
-                    <AvatarImage src={SelectedPost?.author?.profilePicture} />
-                    <AvatarFallback>cn</AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div className="flex flex-col">
-                  <Link className="font-semibold text-base">
-                    {SelectedPost?.author?.username || "username"}
-                  </Link>
-                  <span className="text-sm">{SelectedPost?.caption}</span>
-                </div>
-              </div>
-              {CommentData?.map((comment) => {
+              {
+              post.map((comment) => {
                 return <Comment key={comment._id} comment={comment} />;
               })}
             </div>
@@ -146,4 +128,4 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
   );
 }
 
-export default CommentDialog;
+export default PostDialog;

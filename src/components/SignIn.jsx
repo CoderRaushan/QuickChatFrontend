@@ -29,7 +29,6 @@ const Navigate=useNavigate();
 
   const dispatch=useDispatch();
     const {isLogin}=useSelector((store)=>store.isLogin);
-    console.log(isLogin)
   const [loading, setloading] = useState(false);
   // const [Verified, setVerified] = useState(false);
   const handleChange = (e) => {
