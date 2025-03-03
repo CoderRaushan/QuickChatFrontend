@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { CiSettings } from "react-icons/ci";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { IoLinkOutline } from "react-icons/io5";
@@ -25,12 +26,12 @@ function Profile() {
   const HandleTabChange = (tab) => {
     setActiveTab(tab);
   };
-  const IsLogedinUserProfile = false;
-  const IsFollowing = true;
+  const IsFollowing = false;
   const params = useParams();
   const userId = params.id;
   useGetUserProfile(userId);
-  const { UserProfile } = useSelector((state) => state.auth);
+  const { UserProfile,user } = useSelector((state) => state.auth);
+  const IsLogedinUserProfile = user?._id === UserProfile?._id;
   const DisplayData =
     ActiveTab === "POSTS"
       ? UserProfile?.posts
@@ -57,12 +58,12 @@ function Profile() {
                 <div className="flex gap-4">
                   {IsLogedinUserProfile ? (
                     <>
-                      <Button
+                      <Link to="/account/edit"><Button
                         variant="secondary"
                         className="cursor-pointer bg-gray-200 hover:bg-gray-300 py-0"
                       >
                         Edit profile
-                      </Button>
+                      </Button></Link>
                       <Button
                         variant="secondary"
                         className="cursor-pointer bg-gray-200 hover:bg-gray-300"

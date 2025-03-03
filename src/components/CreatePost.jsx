@@ -67,12 +67,12 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         </VisuallyHidden>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage className="w-10 h-10 rounded-full" src={user?.user?.profilePicture} alt="User Avatar" />
+            <AvatarImage className="w-10 h-10 rounded-full" src={user?.profilePicture} alt="User Avatar" />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">{user?.user?.username || "username"}</h1>
-            <span className="text-gray-600 text-xs">{user?.user?.bio}</span>
+            <h1 className="font-semibold text-xs">{user?.username || "username"}</h1>
+            <span className="text-gray-600 text-xs">{user?.bio}</span>
           </div>
         </div>
         <Textarea

@@ -18,7 +18,7 @@ function Post({ post }) {
   const [text, setText] = useState("");
   const [CommentOpen, setCommentOpen] = useState(false);
   const [ThreeDotOpen, setThreeDotOpen] = useState(false);
-  const [like, setlike] = useState(post?.likes?.includes(user?.user?._id));
+  const [like, setlike] = useState(post?.likes?.includes(user?._id));
   const [likeCount, setlikeCount] = useState(post?.likes?.length);
   const [CommentData, setCommentData] = useState(post.comments);
   const changeEventHandler = (e) => {
@@ -48,8 +48,8 @@ function Post({ post }) {
             ? {
                 ...p,
                 likes: like
-                  ? p.likes.filter((id) => id !== user.user._id)
-                  : [...p.likes, user.user._id],
+                  ? p.likes.filter((id) => id !== user?._id)
+                  : [...p.likes, user._id],
               }
             : p
         );
@@ -124,7 +124,7 @@ function Post({ post }) {
           <div className="flex item-center gap-3">
           <h1 className="text-lg font-semibold">{post.author.username}</h1>
            {
-            user?.user?._id === post?.author?._id && <Badge variant="secondary">Author</Badge>
+            user?._id === post?.author?._id && <Badge variant="secondary">Author</Badge>
            }
           </div>
         </div>
@@ -154,7 +154,7 @@ function Post({ post }) {
             <Button variant="ghost" className="cursor-pointer w-full">
               Add to Favorites
             </Button>
-            {user && user.user._id === post.author._id && (
+            {user && user?._id === post?.author?._id && (
               <Button
                 onClick={HandleDeletePost}
                 variant="ghost"

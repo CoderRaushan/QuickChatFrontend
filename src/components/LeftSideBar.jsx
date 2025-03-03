@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from  "@/components/ui/avatar";
 import axios from "axios";
 import {
   Heart,
@@ -18,6 +18,7 @@ import CreatePost from "./CreatePost.jsx";
 import { setisLogin } from "../ReduxStore/LoginSlice.js";
 function LeftSideBar() {
   const { user } = useSelector((store) => store.auth);
+  console.log("user id",user?._id);
   const navigate = useNavigate();
   const dispatch=useDispatch();
   const [createPostOpen,setcreatePostOpen]=useState(false);
@@ -69,7 +70,7 @@ function LeftSideBar() {
       // case "Create":
       //   return navigate("/create");
       case "Profile":
-        return navigate(`/profile/${user?.user?._id}`);
+        return navigate(`/profile/${user?._id}`);
       default:
         return;
     }
@@ -86,9 +87,9 @@ function LeftSideBar() {
       icon: (
         <Avatar>
           <AvatarImage
-            src={user?.user?.profilePicture }
+            src={user?.profilePicture }
             alt="User Profile"
-            className="h-10 w-10 rounded-lg"
+            // className="h-10 w-10 rounded-lg"
           />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>

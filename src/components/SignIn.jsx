@@ -65,7 +65,7 @@ const Navigate=useNavigate();
       if (response.data.success) {
         dispatch(setisLogin(true));
         Navigate("/");
-        dispatch(setAuthUser(response.data));//sending to redux store 
+        dispatch(setAuthUser(response.data.user));
         setFormData({ email: "", password: "" });
         toast.success(response.data.message || "Signed in successfully");
       } else {
