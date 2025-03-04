@@ -18,7 +18,6 @@ import CreatePost from "./CreatePost.jsx";
 import { setisLogin } from "../ReduxStore/LoginSlice.js";
 function LeftSideBar() {
   const { user } = useSelector((store) => store.auth);
-  console.log("user id",user?._id);
   const navigate = useNavigate();
   const dispatch=useDispatch();
   const [createPostOpen,setcreatePostOpen]=useState(false);

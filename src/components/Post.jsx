@@ -5,12 +5,14 @@ import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaHeart } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice";
-import { Badge } from "@/components/ui/badge"
+import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice.js";
+import { Badge } from "@/components/ui/badge";
+import { setAuthUser } from "../ReduxStore/authSlice.js";
 function Post({ post }) {
   const { user } = useSelector((store) => store.auth);
   const Posts = useSelector((store) => store.post);
@@ -19,6 +21,9 @@ function Post({ post }) {
   const [CommentOpen, setCommentOpen] = useState(false);
   const [ThreeDotOpen, setThreeDotOpen] = useState(false);
   const [like, setlike] = useState(post?.likes?.includes(user?._id));
+  const [bookmark, setbookmark] = useState(
+    user?.bookmarks?.includes(post?._id)
+  );
   const [likeCount, setlikeCount] = useState(post?.likes?.length);
   const [CommentData, setCommentData] = useState(post.comments);
   const changeEventHandler = (e) => {
@@ -57,6 +62,33 @@ function Post({ post }) {
         toast.success(response.data.message || "Post Liked!");
       } else {
         toast.error(response.data.message || "Post Like Failed");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message || "Internal Server Error");
+    }
+  };
+  const HandleBookmark = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:7464/user/post/${post._id}/bookmark`,
+        {},
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        setbookmark(!bookmark);
+        const updatedUser = {
+          ...user,
+          bookmarks: bookmark
+            ? user.bookmarks.filter((id) => id !== post._id)
+            : [post._id, ...user.bookmarks],
+        };
+        dispatch(setAuthUser(updatedUser));
+        toast.success(response.data.message || "Post Saved!");
+      } else {
+        toast.error(response.data.message || "Post Saved Failed");
       }
     } catch (error) {
       toast.error(error.response.data.message || "Internal Server Error");
@@ -122,10 +154,10 @@ function Post({ post }) {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div className="flex item-center gap-3">
-          <h1 className="text-lg font-semibold">{post.author.username}</h1>
-           {
-            user?._id === post?.author?._id && <Badge variant="secondary">Author</Badge>
-           }
+            <h1 className="text-lg font-semibold">{post.author.username}</h1>
+            {user?._id === post?.author?._id && (
+              <Badge variant="secondary">Author</Badge>
+            )}
           </div>
         </div>
         <Dialog open={ThreeDotOpen}>
@@ -195,7 +227,17 @@ function Post({ post }) {
           />
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
-        <Bookmark className="cursor-pointer hover:text-gray-600" />
+        {bookmark ? (
+          <FaBookmark
+            className="text-xl cursor-pointer"
+            onClick={HandleBookmark}
+          />
+        ) : (
+          <FaRegBookmark
+            className="text-xl cursor-pointer hover:text-gray-600"
+            onClick={HandleBookmark}
+          />
+        )}
       </div>
       <span className="font-medium block mb-2">{likeCount} likes</span>
       <p>
@@ -206,7 +248,7 @@ function Post({ post }) {
         onClick={() => {
           dispatch(setSelectedPost(post));
           setCommentOpen(true);
-        }}  
+        }}
       >
         view all {post.comments.length} comments
       </span>
