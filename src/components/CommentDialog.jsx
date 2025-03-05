@@ -22,7 +22,7 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
   const dispatch = useDispatch();
   const [CommentData, setCommentData] = useState([]);
   useEffect(() => {
-    setCommentData(SelectedPost.comments);
+    setCommentData(SelectedPost?.comments);
   }, [SelectedPost]);
 
   const changeEventHandler = (e) => {

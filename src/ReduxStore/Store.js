@@ -2,6 +2,9 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "./authSlice.js";
 import PostSlice from "./PostSlice.js";
 import setisLogin from "./LoginSlice.js";
+import SocketSlice from "./SocketSlice.js";
+import ChatSlice from "./ChatSlice.js";
+import RealTimeNotificationSlice from "./RealTimeNotificationSlice.js"
 import {
   persistReducer,
   FLUSH,
@@ -23,8 +26,11 @@ const persistConfig = {
 const rootReducer=combineReducers({
 auth:authSlice, 
 post:PostSlice,
-isLogin:setisLogin
-})
+isLogin:setisLogin,
+socketio:SocketSlice,
+chat:ChatSlice,
+Notification:RealTimeNotificationSlice,
+});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 

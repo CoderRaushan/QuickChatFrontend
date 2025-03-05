@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
@@ -26,7 +26,7 @@ const Navigate=useNavigate();
     email: "",
     password: "",
   });
-
+  const {user}=useSelector(store=>store.auth);
   const dispatch=useDispatch();
     const {isLogin}=useSelector((store)=>store.isLogin);
   const [loading, setloading] = useState(false);
@@ -93,7 +93,12 @@ const Navigate=useNavigate();
     e.preventDefault();
     window.location.href = youtubeUri;
   };
-
+useEffect(()=>{
+  if(user)
+  {
+    Navigate("/");
+  }
+},[])
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <Card className="w-96 shadow-lg">

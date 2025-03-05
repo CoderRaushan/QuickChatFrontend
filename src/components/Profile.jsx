@@ -48,7 +48,7 @@ function Profile() {
                 src={UserProfile?.profilePicture}
                 alt="User Avatar"
               />
-              <AvatarFallback>{UserProfile?.username[0] || CN}</AvatarFallback>
+              <AvatarFallback>{UserProfile?.username[0] || "CN"}</AvatarFallback>
             </Avatar>
           </section>
           <section>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
@@ -16,12 +16,14 @@ import GooglePhoto from "@/assets/SignUpLogin/google.png";
 import GitHubPhoto from "@/assets/SignUpLogin/github.png";
 import YoutubePhoto from "@/assets/SignUpLogin/youtube.webp";
 import { Loader2 } from "lucide-react";
+import { useSelector } from "react-redux";
 const SignupForm = () => {
   const [loading, setloading] = useState(false);
+  const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
-    name:"",
+    name: "",
     email: "",
     verificationCode: "",
     age: "",
@@ -54,7 +56,6 @@ const SignupForm = () => {
       const verificationUri = import.meta.env.VITE_VERIFYEMAIL;
       const response = await axios.post(verificationUri, verificationData);
       if (response.data.success) {
-       
         // console.log(response.data.message);
         setIsCodeSent(true);
         setUserDetails({
@@ -72,9 +73,7 @@ const SignupForm = () => {
     } catch (error) {
       console.error("Error:", error.response.data.message);
       toast.error(error.response.data.message || "Error sending message");
-    }
-    finally
-    {
+    } finally {
       setloading(false);
     }
   };
@@ -93,7 +92,7 @@ const SignupForm = () => {
       setloading(false);
       return;
     }
-    
+
     try {
       const userdata = {
         username: userDetails.username,
@@ -101,7 +100,7 @@ const SignupForm = () => {
         Varcode: formData.verificationCode,
         age: formData.age,
         password: formData.password,
-        name:formData.name,
+        name: formData.name,
       };
       const signupUri = import.meta.env.VITE_signup;
       const response = await axios.post(signupUri, userdata);
@@ -113,7 +112,7 @@ const SignupForm = () => {
           verificationCode: "",
           age: "",
           password: "",
-          name:"",
+          name: "",
         });
         setIsCodeSent(false);
         console.log(response.data.message);
@@ -128,8 +127,7 @@ const SignupForm = () => {
       console.error("Error:", error.response.data.message);
       // alert("Error:", error.response.data.message);
       toast.error(error.response.data.message || "Error signing up");
-    }
-    finally{
+    } finally {
       setloading(false);
     }
   };
@@ -148,7 +146,11 @@ const SignupForm = () => {
     e.preventDefault();
     window.location.href = youtubeUri;
   };
-
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <Card className="w-96 shadow-lg">
@@ -164,7 +166,7 @@ const SignupForm = () => {
           {!isCodeSent ? (
             <form>
               <div className="space-y-4">
-              <div>
+                <div>
                   <label
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
@@ -219,7 +221,11 @@ const SignupForm = () => {
                     Please Wait!
                   </Button>
                 ) : (
-                  <Button onClick={handleGetCode} className="w-full mt-4" type="submit">
+                  <Button
+                    onClick={handleGetCode}
+                    className="w-full mt-4"
+                    type="submit"
+                  >
                     Get Verification Code
                   </Button>
                 )}

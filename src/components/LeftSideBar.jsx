@@ -1,5 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from  "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 import {
   Heart,
   Home,
@@ -9,32 +10,50 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { redirect, useNavigate } from "react-router-dom";
+import { Link, redirect, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setAuthUser } from "../ReduxStore/authSlice";
 import CreatePost from "./CreatePost.jsx";
 import { setisLogin } from "../ReduxStore/LoginSlice.js";
+import { setLikeNotification } from "../ReduxStore/RealTimeNotificationSlice.js";
+import CommentDialog from "./CommentDialog.jsx";
+import { setSelectedPost } from "../ReduxStore/PostSlice.js";
 function LeftSideBar() {
+  const [CommentOpen, setCommentOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
-  const dispatch=useDispatch();
-  const [createPostOpen,setcreatePostOpen]=useState(false);
-  const {isLogin}=useSelector((store)=>store.isLogin);
-  const CreatePostHandler=()=>
-  {
+  const dispatch = useDispatch();
+  const [createPostOpen, setcreatePostOpen] = useState(false);
+  const { UserProfile } = useSelector((state) => state.auth);
+  console.log("userprpofile",UserProfile)
+  const { isLogin } = useSelector((store) => store.isLogin);
+  const { likeNotification } = useSelector((store) => store.Notification);
+  // let targetuser;
+  // likeNotification.map((nofy) => {
+  //   targetuser = user.posts.find((item) => item._id === nofy.postId);
+  // });
+  const CreatePostHandler = () => {
     setcreatePostOpen(true);
-  }
+  };
   const handleLogout = async () => {
     const logoutUri = import.meta.env.VITE_logout;
     try {
       const response = await axios.post(
         logoutUri,
         {},
-        { withCredentials: true, headers: { "Content-Type": "application/json" } }
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
       );
-
       if (response.data.success) {
         toast.success(response.data.message || "User logged out successfully!");
         dispatch(setAuthUser(null));
@@ -55,7 +74,7 @@ function LeftSideBar() {
       case "Create":
         return CreatePostHandler();
       case "Login":
-        return  navigate("/signin");
+        return navigate("/signin");
       case "Home":
         return navigate("/");
       // case "Search":
@@ -86,22 +105,22 @@ function LeftSideBar() {
       icon: (
         <Avatar>
           <AvatarImage
-            src={user?.profilePicture }
+            src={user?.profilePicture}
             alt="User Profile"
             // className="h-10 w-10 rounded-lg"
           />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       ),
-      text:"Profile",
+      text: "Profile",
     },
-    { icon:<LogOutIcon /> , text:isLogin ? "Logout": "Login" },
+    { icon: <LogOutIcon />, text: isLogin ? "Logout" : "Login" },
   ];
 
   return (
     <div className="fixed top-0 z-10 left-0 px-4 border-r border-gray-300 w-[16%] h-screen bg-white">
       <div className="flex flex-col">
-        <h1 className="my-8 pl-3 font-bold text-xl">Logo</h1>
+        <h1 className="my-8 pl-3 font-bold text-xl cursor-pointer">Logo</h1>
         {sidebarItems.map((item, index) => (
           <div
             key={index}
@@ -110,10 +129,93 @@ function LeftSideBar() {
           >
             <div>{item.icon}</div>
             <div>{item.text}</div>
+            {item.text === "Notifications" && likeNotification.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      dispatch(setLikeNotification([]));
+                    }}
+                    size="icon"
+                    className="rounded-full h-5 w-5 absolute bottom-6 left-6 bg-red-600 hover:bg-red-600"
+                  >
+                    {likeNotification.length}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div>
+                    {likeNotification?.length === 0 ? (
+                      <p>No new Notification</p>
+                    ) : (
+                      likeNotification?.map((notify) => {
+                        return (
+                          <div
+                            key={notify?.userId}
+                            className="flex items-center gap-2 p-1 cursor-pointer"
+                          >
+                            <Link to={`/profile/${notify?.userId}`}>
+                              <Avatar>
+                                <AvatarImage
+                                  src={notify?.userDetails?.profilePicture}
+                                ></AvatarImage>
+                              </Avatar>
+                            </Link>
+
+                            <p className="text-sm ">
+                              <span className="font-bold">
+                                <Link
+                                  to={`/profile/${notify?.userId}`}
+                                  className="hover:underline"
+                                >
+                                  {notify?.userDetails?.username}
+                                </Link>
+                              </span>{" "}
+                              liked your post
+                            </p>
+                            <div>
+                              {user?.posts?.some(
+                                (item) => item?._id === notify?.postId
+                              ) && (
+                                <Avatar className="rounded-lg">
+                                  <AvatarImage
+                                    src={
+                                      user?.posts?.find(
+                                        (item) => item?._id === notify?.postId
+                                      )?.image || "default-image-url"
+                                    }
+                                    onClick={() => {
+                                      dispatch(
+                                        setSelectedPost(
+                                          UserProfile?.posts?.find(
+                                            (item) => item?._id === notify?.postId
+                                          )
+                                        )
+                                      );
+                                      setCommentOpen(true);
+                                    }}
+                                  />
+                                </Avatar>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         ))}
       </div>
-      <CreatePost createPostOpen={createPostOpen} setcreatePostOpen={setcreatePostOpen}/>
+      <CreatePost
+        createPostOpen={createPostOpen}
+        setcreatePostOpen={setcreatePostOpen}
+      />
+      <CommentDialog
+        CommentOpen={CommentOpen}
+        setCommentOpen={setCommentOpen}
+      />
     </div>
   );
 }

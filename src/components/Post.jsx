@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
+import { MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaHeart } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
@@ -177,12 +177,15 @@ function Post({ post }) {
             onInteractOutside={() => setThreeDotOpen(false)}
             className="flex flex-col items-center text-sm text-center"
           >
-            <Button
-              variant="ghost"
-              className="cursor-pointer w-full text-red-500 font-bold"
-            >
-              Unfollow
-            </Button>
+            {post?.author?._id !== user?._id && (
+              <Button
+                variant="ghost"
+                className="cursor-pointer w-full text-red-500 font-bold"
+              >
+                Unfollow
+              </Button>
+            )}
+
             <Button variant="ghost" className="cursor-pointer w-full">
               Add to Favorites
             </Button>
