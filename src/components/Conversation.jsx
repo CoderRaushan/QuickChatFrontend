@@ -1,10 +1,18 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function Conversation() {
     const { user, suggestedUsers } = useSelector(store => store.auth);
     const isOnline = false;
+    const navigate=useNavigate();
+    useEffect(()=>{
+        if(!user)
+        {
+            navigate("/signin");
+        }
+    },[])
   return (
     <div className='flex ml-[16%] h-screen'>
       <section>

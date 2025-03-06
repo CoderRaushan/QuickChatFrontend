@@ -7,7 +7,7 @@ function ProtectedRoutes({children}) {
     const  navigate=useNavigate();
     useEffect(()=>{
         if(!user){
-            navigate("/sigin")
+            navigate("/signin")
         }
     },[])
   return <>

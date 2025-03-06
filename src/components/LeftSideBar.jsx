@@ -33,7 +33,6 @@ function LeftSideBar() {
   const dispatch = useDispatch();
   const [createPostOpen, setcreatePostOpen] = useState(false);
   const { UserProfile } = useSelector((state) => state.auth);
-  console.log("userprpofile",UserProfile)
   const { isLogin } = useSelector((store) => store.isLogin);
   const { likeNotification } = useSelector((store) => store.Notification);
   // let targetuser;

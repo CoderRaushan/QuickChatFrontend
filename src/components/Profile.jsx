@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useGetUserProfile from "../Hooks/useGetUserProfile.jsx";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +19,10 @@ import {
 import { Heart, MessageCircle } from "lucide-react";
 import CommentDialog from "./CommentDialog.jsx";
 import { setSelectedPost } from "../ReduxStore/PostSlice.js";
+import { setAuthUser, setUserProfile } from "../ReduxStore/authSlice.js";
+import { toast } from "react-toastify";
+import axios from "axios";
+import FollowingDialog from "./FollowingDialog.jsx";
 function Profile() {
   const [ActiveTab, setActiveTab] = useState("POSTS");
   const [CommentOpen, setCommentOpen] = useState(false);
@@ -26,11 +30,18 @@ function Profile() {
   const HandleTabChange = (tab) => {
     setActiveTab(tab);
   };
-  const IsFollowing = false;
+  const [openFollowing, setopenFollowing] = useState(false);
+  // const filteredUsers = user?.following?.filter((folUser) =>
+  //   folUser?.username.toLowerCase().includes(search.toLowerCase())
+  // );
   const params = useParams();
   const userId = params.id;
   useGetUserProfile(userId);
-  const { UserProfile,user } = useSelector((state) => state.auth);
+  const { UserProfile, user } = useSelector((state) => state.auth);
+  const [IsFollowing, setIsFollowing] = useState(
+    user?.following?.some((item) => item?._id === UserProfile?._id)
+  );
+  console.log("is follow:",IsFollowing);
   const IsLogedinUserProfile = user?._id === UserProfile?._id;
   const DisplayData =
     ActiveTab === "POSTS"
@@ -38,6 +49,59 @@ function Profile() {
       : ActiveTab === "SAVED"
       ? UserProfile?.bookmarks
       : "";
+  const handleFollwoAndUnfollow = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:7464/user/followOrUnfollow/${UserProfile?._id}`,
+        {},
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message);
+        const updatedUser = IsFollowing
+          ? {
+              ...user,
+              following: user?.following?.filter(
+                (item) => item?._id !== UserProfile?._id
+              ),
+            }
+          : {
+              ...user,
+              following: [...user?.following,  {
+                _id: UserProfile?._id,
+                name: UserProfile?.name,
+                username: UserProfile?.username,
+                profilePicture: UserProfile?.profilePicture,
+              }],
+            };
+        const updatedUserProfile = IsFollowing
+          ? {
+              ...UserProfile,
+              followers: UserProfile?.followers?.filter(
+                (id) => id !== user?._id
+              ),
+            }
+          : {
+              ...UserProfile,
+              followers: [...(UserProfile?.followers || []), user?._id],
+            };
+        setIsFollowing(!IsFollowing);
+        dispatch(setAuthUser(updatedUser));
+        dispatch(setUserProfile(updatedUserProfile));
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+    }
+  };
+  useEffect(() => {
+    setIsFollowing(user?.following?.some((item) => item?._id === UserProfile?._id));
+  }, [UserProfile, user]);
+  
   return (
     <div className="flex max-w-4xl justify-center mx-auto pl-10">
       <div className="flex flex-col gap-12 p-8">
@@ -48,7 +112,9 @@ function Profile() {
                 src={UserProfile?.profilePicture}
                 alt="User Avatar"
               />
-              <AvatarFallback>{UserProfile?.username[0] || "CN"}</AvatarFallback>
+              <AvatarFallback>
+                {UserProfile?.username[0] || "CN"}
+              </AvatarFallback>
             </Avatar>
           </section>
           <section>
@@ -58,12 +124,14 @@ function Profile() {
                 <div className="flex gap-4">
                   {IsLogedinUserProfile ? (
                     <>
-                      <Link to="/account/edit"><Button
-                        variant="secondary"
-                        className="cursor-pointer bg-gray-200 hover:bg-gray-300 py-0"
-                      >
-                        Edit profile
-                      </Button></Link>
+                      <Link to="/account/edit">
+                        <Button
+                          variant="secondary"
+                          className="cursor-pointer bg-gray-200 hover:bg-gray-300 py-0"
+                        >
+                          Edit profile
+                        </Button>
+                      </Link>
                       <Button
                         variant="secondary"
                         className="cursor-pointer bg-gray-200 hover:bg-gray-300"
@@ -74,7 +142,7 @@ function Profile() {
                     </>
                   ) : IsFollowing ? (
                     <>
-                      <Button className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
+                      <Button onClick={handleFollwoAndUnfollow} className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
                         Unfollow
                       </Button>
                       <Button
@@ -85,7 +153,7 @@ function Profile() {
                       </Button>
                     </>
                   ) : (
-                    <Button className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
+                    <Button onClick={handleFollwoAndUnfollow} className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
                       Follow
                     </Button>
                   )}
@@ -101,7 +169,7 @@ function Profile() {
                   </span>
                 </p>
                 <p>
-                  <span className="text-[#737373]">
+                  <span className="text-[#737373]  cursor-pointer">
                     <span className="text-black font-semibold">
                       {UserProfile?.followers?.length}
                     </span>{" "}
@@ -109,7 +177,9 @@ function Profile() {
                   </span>
                 </p>
                 <p>
-                  <span className="text-[#737373]">
+                  <span className="text-[#737373]  cursor-pointer"
+                  onClick={()=>setopenFollowing(true)}
+                  >
                     <span className="text-black font-semibold">
                       {UserProfile?.following?.length}
                     </span>{" "}
@@ -229,6 +299,10 @@ function Profile() {
           <CommentDialog
             CommentOpen={CommentOpen}
             setCommentOpen={setCommentOpen}
+          />
+          <FollowingDialog
+          openFollowing={openFollowing}
+          setopenFollowing={setopenFollowing}
           />
         </div>
       </div>
