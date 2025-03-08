@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { setSocket } from "./ReduxStore/SocketSlice.js";
 import { setOnlineUsers } from "./ReduxStore/ChatSlice.js";
 import { setLikeNotification } from "./ReduxStore/RealTimeNotificationSlice.js";
+import { setAuthUser } from "./ReduxStore/authSlice.js";
 import io from "socket.io-client";
 function App() {
   const dispatch = useDispatch();
@@ -33,13 +34,18 @@ function App() {
         dispatch(setLikeNotification(notification));
       });
 
-      SocketIo.on("follow", (notification) => {
+      SocketIo.on("follow", (notification) => {//userDetails
+        console.log("follow no");
+        console.log("follow userdetails",notification.author)
+        dispatch(setAuthUser(notification.author));
         dispatch(setLikeNotification(notification));
       });
       SocketIo.on("unfollow", (notification) => {
+        console.log("unfollow no");
+        dispatch(setAuthUser(notification.author));
+        console.log("unfollow userdetails",notification.author)
         dispatch(setLikeNotification(notification));
       });
-
       return () => {
         SocketIo.close();
         dispatch(setSocket(null));

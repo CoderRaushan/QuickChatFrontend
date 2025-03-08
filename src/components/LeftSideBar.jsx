@@ -39,11 +39,7 @@ function LeftSideBar() {
   const { likeNotification, unseenCount,followNotification } = useSelector(
     (store) => store.Notification
   );
-  // console.log("folow",followNotification);
-  // let targetuser;
-  // likeNotification.map((nofy) => {
-  //   targetuser = user.posts.find((item) => item._id === nofy.postId);
-  // });
+  console.log(followNotification)
   const CreatePostHandler = () => {
     setcreatePostOpen(true);
   };
@@ -90,7 +86,7 @@ function LeftSideBar() {
       case "Messages":
         return navigate("/conversation");
       case "Notifications":
-        setnotification(true);
+        return setnotification(true);
       // case "Create":
       //   return navigate("/create");
       case "Profile":
@@ -128,9 +124,7 @@ function LeftSideBar() {
 
   return (
     <div
-      className={`fixed top-0 z-10 left-0 px-4 border-r border-gray-300 w-[16%] h-screen bg-white flex ${
-        notification ? "min-w-[390px]" : ""
-      }`}
+      className={`fixed top-0 z-10 left-0 px-4 border-r border-gray-300 ${notification?"w-[23%]":"w-[16%]"} h-screen bg-white flex`}
     >
       <div className="flex flex-col">
         <h1 className="my-8 pl-3 font-bold text-xl cursor-pointer">Logo</h1>
@@ -138,7 +132,7 @@ function LeftSideBar() {
           <div
             key={index}
             onClick={() => SideBarClickHandler(item.text)}
-            className="hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3 flex items-center gap-3 relative"
+            className={`hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3 flex items-center gap-3 relative ${notification?"":"pr-[88px]"}`}
           >
             <div>{item.icon}</div>
             {!notification && <div>{item.text}</div>}{" "}
@@ -225,11 +219,11 @@ function LeftSideBar() {
           </div>
         ))}
       </div>
-      <div className="flex items-start my-4 justify-center min-w-[300px]">
+      <div className="flex items-start my-4 justify-center">
         {notification && (
           <div className="flex flex-col">
-            <div className="font-bold p-4 text-xl">Notification</div>
-            <div>
+            <div className="font-bold p-4 text-xl w-[290px]">Notification</div>
+            <div className="flex flex-col gap-2">
               {likeNotification?.length === 0 ? (
                 <p>No new Notification</p>
               ) : (

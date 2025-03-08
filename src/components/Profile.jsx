@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useGetUserProfile from "../Hooks/useGetUserProfile.jsx";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -46,63 +46,96 @@ function Profile() {
       : ActiveTab === "SAVED"
       ? UserProfile?.bookmarks
       : "";
-  const handleFollwoAndUnfollow = async () => {
+  // const handleFollwoAndUnfollow = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:7464/user/followOrUnfollow/${UserProfile?._id}`,
+  //       {},
+  //       {
+  //         withCredentials: true,
+  //         headers: { "Content-Type": "application/json" },
+  //       }
+  //     );
+  //     if (response.data.success) {
+  //       toast.success(response.data.message);
+  //       const updatedUser = IsFollowing
+  //         ? {
+  //             ...user,
+  //             following: user?.following?.filter(
+  //               (item) => item?._id !== UserProfile?._id
+  //             ),
+  //           }
+  //         : {
+  //             ...user,
+  //             following: [
+  //               ...user?.following,
+  //               {
+  //                 _id: UserProfile?._id,
+  //                 name: UserProfile?.name,
+  //                 username: UserProfile?.username,
+  //                 profilePicture: UserProfile?.profilePicture,
+  //               },
+  //             ],
+  //           };
+  //       const updatedUserProfile = IsFollowing
+  //         ? {
+  //             ...UserProfile,
+  //             followers: UserProfile?.followers?.filter(
+  //               (id) => id !== user?._id
+  //             ),
+  //           }
+  //         : {
+  //             ...UserProfile,
+  //             followers: [...UserProfile?.followers, user],
+  //           };
+  //       setIsFollowing(!IsFollowing);
+  //       dispatch(setAuthUser(updatedUser));
+  //       dispatch(setUserProfile(updatedUserProfile));
+  //     } else {
+  //       toast.error(response.data.message);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message);
+  //   }
+  // };
+  const handleFollwoAndUnfollow = useCallback(async () => {
+    if (!UserProfile || !user) return;
+    
     try {
       const response = await axios.post(
-        `http://localhost:7464/user/followOrUnfollow/${UserProfile?._id}`,
+        `http://localhost:7464/user/followOrUnfollow/${UserProfile._id}`,
         {},
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
+        { withCredentials: true, headers: { "Content-Type": "application/json" } }
       );
+  
       if (response.data.success) {
         toast.success(response.data.message);
-        const updatedUser = IsFollowing
-          ? {
-              ...user,
-              following: user?.following?.filter(
-                (item) => item?._id !== UserProfile?._id
-              ),
-            }
-          : {
-              ...user,
-              following: [
-                ...user?.following,
-                {
-                  _id: UserProfile?._id,
-                  name: UserProfile?.name,
-                  username: UserProfile?.username,
-                  profilePicture: UserProfile?.profilePicture,
-                },
-              ],
-            };
-        const updatedUserProfile = IsFollowing
-          ? {
-              ...UserProfile,
-              followers: UserProfile?.followers?.filter(
-                (id) => id !== user?._id
-              ),
-            }
-          : {
-              ...UserProfile,
-              followers: [...(UserProfile?.followers || []), user?._id],
-            };
-        setIsFollowing(!IsFollowing);
-        dispatch(setAuthUser(updatedUser));
-        dispatch(setUserProfile(updatedUserProfile));
+  
+        // Update follow state
+        const updatedFollowing = IsFollowing
+          ? user.following.filter((item) => item._id !== UserProfile._id)
+          : [...user.following,{_id:UserProfile?._id,username:UserProfile?.username,profilePicture:UserProfile?.profilePicture}];
+  
+        const updatedFollowers = IsFollowing
+          ? UserProfile.followers.filter((id) => id !== user._id)
+          : [...UserProfile.followers,user];
+  
+        setIsFollowing((prevState)=>!prevState);
+        dispatch(setAuthUser({ ...user, following: updatedFollowing }));
+        dispatch(setUserProfile({ ...UserProfile, followers: updatedFollowers }));
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(error.response?.data?.message || "An error occurred");
     }
-  };
-  useEffect(() => {
-    setIsFollowing(
-      user?.following?.some((item) => item?._id === UserProfile?._id)
-    );
-  }, [UserProfile, user]);
+  }, [IsFollowing, UserProfile, user, dispatch]);
+  
+  // useEffect(() => {
+  //   setIsFollowing(
+  //     user?.following?.some((item) => item?._id === UserProfile?._id)
+  //   );
+  // }, [UserProfile, user]);
 
   return (
     <div className="flex max-w-4xl justify-center mx-auto pl-10">
