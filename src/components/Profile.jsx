@@ -31,9 +31,7 @@ function Profile() {
     setActiveTab(tab);
   };
   const [openFollowing, setopenFollowing] = useState(false);
-  // const filteredUsers = user?.following?.filter((folUser) =>
-  //   folUser?.username.toLowerCase().includes(search.toLowerCase())
-  // );
+  const [openFollower, setopenFollower] = useState(false);
   const params = useParams();
   const userId = params.id;
   useGetUserProfile(userId);
@@ -41,7 +39,6 @@ function Profile() {
   const [IsFollowing, setIsFollowing] = useState(
     user?.following?.some((item) => item?._id === UserProfile?._id)
   );
-  console.log("is follow:",IsFollowing);
   const IsLogedinUserProfile = user?._id === UserProfile?._id;
   const DisplayData =
     ActiveTab === "POSTS"
@@ -70,12 +67,15 @@ function Profile() {
             }
           : {
               ...user,
-              following: [...user?.following,  {
-                _id: UserProfile?._id,
-                name: UserProfile?.name,
-                username: UserProfile?.username,
-                profilePicture: UserProfile?.profilePicture,
-              }],
+              following: [
+                ...user?.following,
+                {
+                  _id: UserProfile?._id,
+                  name: UserProfile?.name,
+                  username: UserProfile?.username,
+                  profilePicture: UserProfile?.profilePicture,
+                },
+              ],
             };
         const updatedUserProfile = IsFollowing
           ? {
@@ -99,9 +99,11 @@ function Profile() {
     }
   };
   useEffect(() => {
-    setIsFollowing(user?.following?.some((item) => item?._id === UserProfile?._id));
+    setIsFollowing(
+      user?.following?.some((item) => item?._id === UserProfile?._id)
+    );
   }, [UserProfile, user]);
-  
+
   return (
     <div className="flex max-w-4xl justify-center mx-auto pl-10">
       <div className="flex flex-col gap-12 p-8">
@@ -142,7 +144,10 @@ function Profile() {
                     </>
                   ) : IsFollowing ? (
                     <>
-                      <Button onClick={handleFollwoAndUnfollow} className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
+                      <Button
+                        onClick={handleFollwoAndUnfollow}
+                        className="bg-[#0895F6] hover:bg-[#3192d2] h-8"
+                      >
                         Unfollow
                       </Button>
                       <Button
@@ -153,7 +158,10 @@ function Profile() {
                       </Button>
                     </>
                   ) : (
-                    <Button onClick={handleFollwoAndUnfollow} className="bg-[#0895F6] hover:bg-[#3192d2] h-8">
+                    <Button
+                      onClick={handleFollwoAndUnfollow}
+                      className="bg-[#0895F6] hover:bg-[#3192d2] h-8"
+                    >
                       Follow
                     </Button>
                   )}
@@ -169,7 +177,10 @@ function Profile() {
                   </span>
                 </p>
                 <p>
-                  <span className="text-[#737373]  cursor-pointer">
+                  <span
+                    className="text-[#737373]  cursor-pointer"
+                    onClick={() => setopenFollower(true)}
+                  >
                     <span className="text-black font-semibold">
                       {UserProfile?.followers?.length}
                     </span>{" "}
@@ -177,8 +188,9 @@ function Profile() {
                   </span>
                 </p>
                 <p>
-                  <span className="text-[#737373]  cursor-pointer"
-                  onClick={()=>setopenFollowing(true)}
+                  <span
+                    className="text-[#737373]  cursor-pointer"
+                    onClick={() =>setopenFollowing(true)}
                   >
                     <span className="text-black font-semibold">
                       {UserProfile?.following?.length}
@@ -301,8 +313,17 @@ function Profile() {
             setCommentOpen={setCommentOpen}
           />
           <FollowingDialog
-          openFollowing={openFollowing}
-          setopenFollowing={setopenFollowing}
+            open={openFollowing}
+            setOpen={setopenFollowing}
+            list={UserProfile?.following}
+            type="following"
+          />
+
+          <FollowingDialog
+            open={openFollower}
+            setOpen={setopenFollower}
+            list={UserProfile?.followers}
+            type="followers"
           />
         </div>
       </div>

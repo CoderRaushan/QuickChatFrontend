@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 function CommentDialog({ CommentOpen, setCommentOpen }) {
   const [commentText, setcommentText] = useState("");
   const { SelectedPost } = useSelector((store) => store.post);
+  const {user}=useSelector(store=>store.auth);
   const Posts = useSelector((store) => store.post);
   const dispatch = useDispatch();
   const [CommentData, setCommentData] = useState([]);
@@ -96,7 +97,9 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
                 </DialogTrigger>
                 <DialogContent className="flex flex-col items-center text-sm text-center">
                   <div className="cursor-pointer w-full text-[#ED4956] font-bold">
-                    Unfollow
+                    {
+                      user?._id!==SelectedPost?.author?._id && "Unfollow"
+                    }
                   </div>
                   <div className="cursor-pointer w-full">Add to favorites</div>
                 </DialogContent>
@@ -123,7 +126,7 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
               })}
             </div>
             <div className="p-4">
-              <div className="flex item-center gap-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   onChange={changeEventHandler}

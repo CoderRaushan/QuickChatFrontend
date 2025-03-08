@@ -7,8 +7,6 @@ function SuggestedUser() {
   const suggestedUser = suggestedUsers.filter(
     (sugguser) =>  !user?.following?.some((followedUser) => followedUser?._id === sugguser?._id)
   );
-  console.log("suggested users =>",suggestedUser);// user?.following?.some((item) => item?._id === UserProfile?._id)
-  // const IsFollowing = user?.following?.includes(UserProfile?._id);
   return (
     <div className="my-12">
       <div className="flex items-center justify-between text-sm">

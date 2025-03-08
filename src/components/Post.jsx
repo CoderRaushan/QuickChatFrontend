@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice.js";
 import { Badge } from "@/components/ui/badge";
 import { setAuthUser } from "../ReduxStore/authSlice.js";
+import { Link } from "react-router-dom";
 function Post({ post }) {
   const { user } = useSelector((store) => store.auth);
   const Posts = useSelector((store) => store.post);
@@ -148,18 +149,20 @@ function Post({ post }) {
   return (
     <div className="my-8 w-full max-w-sm mx-auto cursor-pointer">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar>
-            <AvatarImage src={post.author.profilePicture} alt="User Avatar" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <div className="flex item-center gap-3">
-            <h1 className="text-lg font-semibold">{post.author.username}</h1>
-            {user?._id === post?.author?._id && (
-              <Badge variant="secondary">Author</Badge>
-            )}
+        <Link to={`/profile/${post?.author?._id}`}>
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarImage src={post.author.profilePicture} alt="User Avatar" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <div className="flex item-center gap-3">
+              <h1 className="text-lg font-semibold">{post.author.username}</h1>
+              {user?._id === post?.author?._id && (
+                <Badge variant="secondary">Author</Badge>
+              )}
+            </div>
           </div>
-        </div>
+        </Link>
         <Dialog open={ThreeDotOpen}>
           <DialogTrigger asChild>
             <Button

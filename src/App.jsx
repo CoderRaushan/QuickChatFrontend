@@ -33,6 +33,13 @@ function App() {
         dispatch(setLikeNotification(notification));
       });
 
+      SocketIo.on("follow", (notification) => {
+        dispatch(setLikeNotification(notification));
+      });
+      SocketIo.on("unfollow", (notification) => {
+        dispatch(setLikeNotification(notification));
+      });
+
       return () => {
         SocketIo.close();
         dispatch(setSocket(null));

@@ -10,6 +10,7 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 import {
   Popover,
   PopoverContent,
@@ -23,7 +24,7 @@ import { toast } from "react-toastify";
 import { setAuthUser } from "../ReduxStore/authSlice";
 import CreatePost from "./CreatePost.jsx";
 import { setisLogin } from "../ReduxStore/LoginSlice.js";
-import { setLikeNotification } from "../ReduxStore/RealTimeNotificationSlice.js";
+import { markNotificationsAsSeen } from "../ReduxStore/RealTimeNotificationSlice.js";
 import CommentDialog from "./CommentDialog.jsx";
 import { setSelectedPost } from "../ReduxStore/PostSlice.js";
 function LeftSideBar() {
@@ -32,9 +33,13 @@ function LeftSideBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [createPostOpen, setcreatePostOpen] = useState(false);
+  const [notification, setnotification] = useState(false);
   const { UserProfile } = useSelector((state) => state.auth);
   const { isLogin } = useSelector((store) => store.isLogin);
-  const { likeNotification } = useSelector((store) => store.Notification);
+  const { likeNotification, unseenCount,followNotification } = useSelector(
+    (store) => store.Notification
+  );
+  // console.log("folow",followNotification);
   // let targetuser;
   // likeNotification.map((nofy) => {
   //   targetuser = user.posts.find((item) => item._id === nofy.postId);
@@ -56,6 +61,7 @@ function LeftSideBar() {
       if (response.data.success) {
         toast.success(response.data.message || "User logged out successfully!");
         dispatch(setAuthUser(null));
+        dispatch(setisLogin(false));
         navigate("/");
       } else {
         toast.error(response.data.message || "User logout failed!");
@@ -66,6 +72,7 @@ function LeftSideBar() {
   };
 
   const SideBarClickHandler = (text) => {
+    setnotification(false);
     switch (text) {
       case "Logout":
         dispatch(setisLogin(false));
@@ -80,10 +87,10 @@ function LeftSideBar() {
       //   return navigate("/search");
       // case "Explore":
       //   return navigate("/explore");
-      // case "Messages":
-      //   return navigate("/messages");
-      // case "Notifications":
-      //   return navigate("/notifications");
+      case "Messages":
+        return navigate("/conversation");
+      case "Notifications":
+        setnotification(true);
       // case "Create":
       //   return navigate("/create");
       case "Profile":
@@ -98,16 +105,19 @@ function LeftSideBar() {
     { icon: <Search />, text: "Search" },
     { icon: <TrendingUp />, text: "Explore" },
     { icon: <MessageCircle />, text: "Messages" },
-    { icon: <Heart />, text: "Notifications" },
+    {
+      icon: notification ? (
+        <FaHeart size={"22px"} />
+      ) : (
+        <FaRegHeart size={"22px"} />
+      ),
+      text: "Notifications",
+    },
     { icon: <PlusSquare />, text: "Create" },
     {
       icon: (
         <Avatar>
-          <AvatarImage
-            src={user?.profilePicture}
-            alt="User Profile"
-            // className="h-10 w-10 rounded-lg"
-          />
+          <AvatarImage src={user?.profilePicture} alt="User Profile" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       ),
@@ -117,7 +127,11 @@ function LeftSideBar() {
   ];
 
   return (
-    <div className="fixed top-0 z-10 left-0 px-4 border-r border-gray-300 w-[16%] h-screen bg-white">
+    <div
+      className={`fixed top-0 z-10 left-0 px-4 border-r border-gray-300 w-[16%] h-screen bg-white flex ${
+        notification ? "min-w-[390px]" : ""
+      }`}
+    >
       <div className="flex flex-col">
         <h1 className="my-8 pl-3 font-bold text-xl cursor-pointer">Logo</h1>
         {sidebarItems.map((item, index) => (
@@ -127,26 +141,28 @@ function LeftSideBar() {
             className="hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3 flex items-center gap-3 relative"
           >
             <div>{item.icon}</div>
-            <div>{item.text}</div>
+            {!notification && <div>{item.text}</div>}{" "}
+            {/* Hide text when hideText is true */}
             {item.text === "Notifications" && likeNotification.length > 0 && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     onClick={() => {
-                      dispatch(setLikeNotification([]));
+                      dispatch(markNotificationsAsSeen());
                     }}
                     size="icon"
                     className="rounded-full h-5 w-5 absolute bottom-6 left-6 bg-red-600 hover:bg-red-600"
                   >
-                    {likeNotification.length}
+                    {unseenCount}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
                   <div>
-                    {likeNotification?.length === 0 ? (
+                    {
+                    likeNotification?.length === 0 && followNotification?.length === 0 ? (
                       <p>No new Notification</p>
                     ) : (
-                      likeNotification?.map((notify) => {
+                      [...(likeNotification || []), ...(followNotification || [])].map((notify) => {
                         return (
                           <div
                             key={notify?.userId}
@@ -159,7 +175,6 @@ function LeftSideBar() {
                                 ></AvatarImage>
                               </Avatar>
                             </Link>
-
                             <p className="text-sm ">
                               <span className="font-bold">
                                 <Link
@@ -186,7 +201,8 @@ function LeftSideBar() {
                                       dispatch(
                                         setSelectedPost(
                                           UserProfile?.posts?.find(
-                                            (item) => item?._id === notify?.postId
+                                            (item) =>
+                                              item?._id === notify?.postId
                                           )
                                         )
                                       );
@@ -199,13 +215,80 @@ function LeftSideBar() {
                           </div>
                         );
                       })
-                    )}
+                    )
+                    
+                    }
                   </div>
                 </PopoverContent>
               </Popover>
             )}
           </div>
         ))}
+      </div>
+      <div className="flex items-start my-4 justify-center min-w-[300px]">
+        {notification && (
+          <div className="flex flex-col">
+            <div className="font-bold p-4 text-xl">Notification</div>
+            <div>
+              {likeNotification?.length === 0 ? (
+                <p>No new Notification</p>
+              ) : (
+                likeNotification?.map((notify) => {
+                  return (
+                    <div
+                      key={notify?.userId}
+                      className="flex items-center gap-2 p-1 cursor-pointer"
+                    >
+                      <Link to={`/profile/${notify?.userId}`}>
+                        <Avatar>
+                          <AvatarImage
+                            src={notify?.userDetails?.profilePicture}
+                          ></AvatarImage>
+                        </Avatar>
+                      </Link>
+                      <p className="text-sm ">
+                        <span className="font-bold">
+                          <Link
+                            to={`/profile/${notify?.userId}`}
+                            className="hover:underline"
+                          >
+                            {notify?.userDetails?.username}
+                          </Link>
+                        </span>{" "}
+                        liked your post
+                      </p>
+                      <div>
+                        {user?.posts?.some(
+                          (item) => item?._id === notify?.postId
+                        ) && (
+                          <Avatar className="rounded-lg">
+                            <AvatarImage
+                              src={
+                                user?.posts?.find(
+                                  (item) => item?._id === notify?.postId
+                                )?.image || "default-image-url"
+                              }
+                              onClick={() => {
+                                dispatch(
+                                  setSelectedPost(
+                                    UserProfile?.posts?.find(
+                                      (item) => item?._id === notify?.postId
+                                    )
+                                  )
+                                );
+                                setCommentOpen(true);
+                              }}
+                            />
+                          </Avatar>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
       </div>
       <CreatePost
         createPostOpen={createPostOpen}
