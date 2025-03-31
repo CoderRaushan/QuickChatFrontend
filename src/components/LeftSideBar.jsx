@@ -39,7 +39,6 @@ function LeftSideBar() {
   const { likeNotification, unseenCount,followNotification } = useSelector(
     (store) => store.Notification
   );
-  console.log(followNotification)
   const CreatePostHandler = () => {
     setcreatePostOpen(true);
   };

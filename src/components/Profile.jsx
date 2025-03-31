@@ -233,7 +233,7 @@ function Profile() {
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <span className="font-semibold">Raushan Kumar</span>
+                <span className="font-semibold">{UserProfile?.name}</span>
                 <span>
                   <Badge
                     variant="secondary"

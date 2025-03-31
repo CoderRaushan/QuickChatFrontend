@@ -152,11 +152,11 @@ function Post({ post }) {
         <Link to={`/profile/${post?.author?._id}`}>
           <div className="flex items-center gap-2">
             <Avatar>
-              <AvatarImage src={post.author.profilePicture} alt="User Avatar" />
+              <AvatarImage src={post?.author?.profilePicture} alt="User Avatar" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <div className="flex item-center gap-3">
-              <h1 className="text-lg font-semibold">{post.author.username}</h1>
+              <h1 className="text-lg font-semibold">{post?.author?.username}</h1>
               {user?._id === post?.author?._id && (
                 <Badge variant="secondary">Author</Badge>
               )}
@@ -247,7 +247,7 @@ function Post({ post }) {
       </div>
       <span className="font-medium block mb-2">{likeCount} likes</span>
       <p>
-        <span className="font-medium mr-2">{post.author.username}</span>
+        <span className="font-medium mr-2">{post?.author?.username}</span>
         {post.caption}
       </p>
       <span
