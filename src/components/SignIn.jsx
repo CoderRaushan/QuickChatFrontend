@@ -93,12 +93,12 @@ const Navigate=useNavigate();
     e.preventDefault();
     window.location.href = youtubeUri;
   };
-useEffect(()=>{
-  if(user)
-  {
-    Navigate("/");
-  }
-},[])
+// useEffect(()=>{
+//   if(user)
+//   {
+//     Navigate("/");
+//   }
+// },[])
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <Card className="w-96 shadow-lg">

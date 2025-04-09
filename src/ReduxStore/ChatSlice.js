@@ -12,8 +12,13 @@ const ChatSlice = createSlice({
             state.onlineUsers = action.payload;
         },
         setMessages: (state, action) => {
-            state.messages = action.payload;
-        },
+                  state.messages = typeof action.payload === 'function'
+                    ? action.payload(state.messages)
+                    : action.payload;
+                },
+        // setMessages: (state, action) => {
+        //     state.messages = action.payload;
+        // },
     }
 });
 export const { setOnlineUsers, setMessages } = ChatSlice.actions;
