@@ -207,6 +207,10 @@ function Conversation() {
   }, [user, navigate]);
 
   useEffect(() => {
+    seenMessageIds.current.clear(); 
+  }, [selectedUsers]);
+  
+  useEffect(() => {
     if (user) {
       const followingSet = new Set(user.following.map((f) => String(f._id)));
       const mutuals = user.followers.filter((f) =>
