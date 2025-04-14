@@ -21,12 +21,12 @@
 //   const seenMessageIds = useRef(new Set());
 //   useEffect(() => {
 //     if (!socket || !socket.connected || !selectedUsers) return;
-  
+
 //     const seenMessages = messages.filter(
 //       (msg) =>
 //         msg.receiverId === user._id &&
 //         msg.senderId === selectedUsers._id &&
-//         msg.status !== "seen" && 
+//         msg.status !== "seen" &&
 //         !seenMessageIds.current.has(msg._id)
 //     );
 //     if (seenMessages.length > 0) {
@@ -161,7 +161,6 @@
 
 // export default Conversation;
 
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -174,7 +173,8 @@ import { setMessages } from "../ReduxStore/ChatSlice.js";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useSocket } from "../SocketContext.js";
-
+import { FiPaperclip } from "react-icons/fi";
+import FileUpload from "./FileUpload.jsx";
 function Conversation() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -184,10 +184,19 @@ function Conversation() {
   const [TextMsg, setTextMsg] = useState("");
   const socket = useSocket();
   const seenMessageIds = useRef(new Set());
-
+  const inputfileRef = useRef(null);
+  const [fileData, setFileData] = useState(null);
+  const handleIconClick = () => {
+    inputfileRef.current.click();
+  };
+  const HandleFIleclick = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileData(file);
+    }
+  };
   useEffect(() => {
     if (!socket || !socket.connected || !selectedUsers) return;
-
     const seenMessages = messages.filter(
       (msg) =>
         msg.receiverId === user._id &&
@@ -200,16 +209,16 @@ function Conversation() {
         socket.emit("message-seen", msg._id);
       });
     }
-  }, [messages, user._id, selectedUsers, socket]);
+  }, [messages, user?._id, selectedUsers, socket]);
 
   useEffect(() => {
     if (!user) navigate("/signin");
   }, [user, navigate]);
 
   useEffect(() => {
-    seenMessageIds.current.clear(); 
+    seenMessageIds.current.clear();
   }, [selectedUsers]);
-  
+
   useEffect(() => {
     if (user) {
       const followingSet = new Set(user.following.map((f) => String(f._id)));
@@ -277,7 +286,9 @@ function Conversation() {
                 <AvatarFallback>{mutualuser.username[0]}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="font-medium text-sm">{mutualuser.username}</span>
+                <span className="font-medium text-sm">
+                  {mutualuser.username}
+                </span>
                 <span
                   className={`text-xs font-bold ${
                     isOnline ? "text-green-600" : "text-red-600"
@@ -313,7 +324,7 @@ function Conversation() {
 
           <Messages selectedUsers={selectedUsers} />
 
-          <div className="flex items-center p-4 border-t border-gray-300">
+          <div className="flex items-center p-4 border-t border-gray-300 relative w-full">
             <input
               value={TextMsg}
               onKeyDown={(e) => {
@@ -329,13 +340,32 @@ function Conversation() {
             <Button onClick={() => sendMessageHandler(selectedUsers?._id)}>
               Send
             </Button>
+            <input
+              type="file"
+              ref={inputfileRef}
+              onChange={HandleFIleclick}
+              className="hidden"
+            />
+            <FiPaperclip
+              className="absolute right-[100px] top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer size-5"
+              onClick={handleIconClick}
+            />
           </div>
+          {/* {fileData && <FileUpload fileData={fileData} />}
+           */}
+          {fileData && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+              <FileUpload fileData={fileData} setFileData={setFileData} />
+            </div>
+          )}
         </section>
       ) : (
         <div className="hidden md:flex flex-1 flex-col items-center justify-center text-center">
           <MessageCircleCode className="w-20 h-20 text-gray-400 mb-4" />
           <h1 className="font-bold text-xl">Your Messages</h1>
-          <p className="text-sm text-gray-500">Send a message to start a chat</p>
+          <p className="text-sm text-gray-500">
+            Send a message to start a chat
+          </p>
         </div>
       )}
     </div>
