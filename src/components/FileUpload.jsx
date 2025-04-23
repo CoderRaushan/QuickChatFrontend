@@ -26,24 +26,54 @@ function FileUpload({ fileData, setFileData }) {
     }
   }, [fileData]);
 
-  const sendMessageHandler = async (ReceiverId) => {
+  async function uploadFile(file) {
     try {
-        setloading(true);
-      const formdata = new FormData();
-      if (fileData) {
-        formdata.append("file", fileData);
-      }
-      if (TextMsg) {
-        formdata.append("text", TextMsg);
-      }
       const res = await axios.post(
-        `http://localhost:7464/user/message/file/send/${ReceiverId}`,
-        formdata,
+        "http://localhost:7464/user/message/get-upload-url",
+        {
+          fileType: file.type,
+          originalName: file.name,
+        },
         {
           withCredentials: true,
         }
       );
-      if (res.data.success) {
+      const uploadUrl = res.data.uploadUrl || "";
+      const fileUrl = res.data.fileUrl || "";
+      if (res.data.success && uploadUrl && fileUrl) {
+        const response = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type,
+          },
+          body: file,
+        });
+      } else {
+        console.log("file not uploaded to aws s3");
+      }
+      return { 
+        fileUrl, 
+        fileType: file.type, 
+        fileName: file.name,
+        fileSize: file.size,
+       };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const sendMessageHandler = async (ReceiverId) => {
+    try {
+      setloading(true);
+      const {fileUrl,fileType,fileName,fileSize} = await uploadFile(fileData);
+      const res = await axios.post(
+        `http://localhost:7464/user/message/file/send/${ReceiverId}`,
+        { TextMsg, fileData: fileUrl,fileType,fileName,fileSize },
+        {
+          withCredentials: true,
+        }
+      );
+      if (res.data.success ) {
         setloading(false);
         const newMessage = res.data.newMessage;
         if (
