@@ -351,8 +351,6 @@ function Conversation() {
               onClick={handleIconClick}
             />
           </div>
-          {/* {fileData && <FileUpload fileData={fileData} />}
-           */}
           {fileData && (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
               <FileUpload fileData={fileData} setFileData={setFileData} />

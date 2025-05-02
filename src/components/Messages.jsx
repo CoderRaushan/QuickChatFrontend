@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import GetAllMessages from "../Hooks/useGetAllMessages.jsx";
 import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
 import { CheckCheck, Check } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BsFilePdf } from "react-icons/bs";
 
 // Format time utility
@@ -21,7 +21,6 @@ function Messages({ selectedUsers }) {
   const { messages } = useSelector((store) => store.chat);
   const { user } = useSelector((store) => store.auth);
   const messagesEndRef = useRef(null);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -171,7 +170,6 @@ function Messages({ selectedUsers }) {
                             >
                               Your browser does not support the video tag.
                             </video>
-                            
                           </div>
                         );
 
@@ -201,10 +199,8 @@ function Messages({ selectedUsers }) {
                           </div>
                         );
                       })()}
-
                     {/* Text message */}
                     {isTextPresent && <span>{msg.messages}</span>}
-
                     {/* Timestamp and Status */}
                     <div className="flex justify-end items-center gap-1 text-xs mt-1">
                       <span>{formatTime(msg.createdAt)}</span>
@@ -237,6 +233,7 @@ function Messages({ selectedUsers }) {
       </div>
     </div>
   );
+  
 }
 
 export default Messages;
