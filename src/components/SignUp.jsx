@@ -147,11 +147,11 @@ const SignupForm = () => {
     e.preventDefault();
     window.location.href =`${MainUri}/auth/youtube`; ;
   };
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (user) {
+  //     navigate("/");
+  //   }
+  // }, []);
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <Card className="w-96 shadow-lg">
