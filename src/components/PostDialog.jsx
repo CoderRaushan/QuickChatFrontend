@@ -24,8 +24,9 @@ function PostDialog({ PostOpen, setPostOpen,post }) {
   };
   const SendCommentHandler = async () => {
     try {
+      const MainUri = import.meta.env.VITE_MainUri;
       const response = await axios.post(
-        `http://localhost:7464/user/post/${post._id}/comment`,
+        `${MainUri}/user/post/${post._id}/comment`,
         { text:commentText },
         {
           headers: { "Content-Type": "application/json" },

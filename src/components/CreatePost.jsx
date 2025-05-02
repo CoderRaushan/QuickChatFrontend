@@ -32,10 +32,10 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
     const formdata=new FormData();
     formdata.append("caption",caption);
     if(ImagePreview) formdata.append("image",file);
-    const URI=import.meta.env.VITE_CreatePost;
+    const MainUri=import.meta.env.VITE_MainUri;
     try {
         setloading(true);
-        const res= await axios.post(URI,formdata,
+        const res= await axios.post(`${MainUri}/user/post/add`,formdata,
         {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials:true

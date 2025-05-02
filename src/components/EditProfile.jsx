@@ -38,14 +38,14 @@ function EditProfile() {
   };
   const EditProfileHandler = async () => {
     try {
-      const URI=import.meta.env.VITE_EditUserProfile;
+      const MainUri=import.meta.env.VITE_MainUri;
       setLoading(true);
       const formData = new FormData();
       formData.append("profilePicture", input.profilePicture);
       formData.append("bio", input.bio);
       formData.append("gender",input.gender);
 
-      const response = await axios.put(URI, formData, {
+      const response = await axios.put(`${MainUri}/user/edit/profile`, formData, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });

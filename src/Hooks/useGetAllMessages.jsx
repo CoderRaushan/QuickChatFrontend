@@ -9,8 +9,9 @@ function GetAllMessages() {
   useEffect(() => {
     const fetchAllMessages = async () => {
       try {
+        const MainUri = import.meta.env.VITE_MainUri;
         const response = await axios.get(
-          `http://localhost:7464/user/message/all/${selectedUsers._id}`,
+          `${MainUri}/user/message/all/${selectedUsers._id}`,
           {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,

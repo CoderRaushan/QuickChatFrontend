@@ -9,9 +9,9 @@ function useGetUserProfile(userId)
     useEffect(()=>{
         const fetchUserProfile=async()=>
         {
-            const Uri=`http://localhost:7464/user/${userId}/profile`;
+            const MainUri = import.meta.env.VITE_MainUri;
             try {
-                const response = await axios.get(Uri,{
+                const response = await axios.get(`${MainUri}/user/${userId}/profile`,{
                     headers:{'Content-Type':'application/json'},
                     withCredentials: true,
                 });

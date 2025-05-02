@@ -11,9 +11,10 @@ const SocketProvider = (props) => {
     const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
   const [socket, setSocket] = useState(null);
+  const MainUri = import.meta.env.VITE_MainUri;
   useEffect(() => {
     if (user) {
-      const SocketIo = io("http://localhost:7464", {
+      const SocketIo = io(`${MainUri}`, {
         query: {
           userId: user._id,
         },

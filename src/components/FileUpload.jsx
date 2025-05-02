@@ -28,8 +28,9 @@ function FileUpload({ fileData, setFileData }) {
 
   async function uploadFile(file) {
     try {
+      const MainUri = import.meta.env.VITE_MainUri;
       const res = await axios.post(
-        "http://localhost:7464/user/message/get-upload-url",
+        `${MainUri}/user/message/get-upload-url`,
         {
           fileType: file.type,
           originalName: file.name,
@@ -64,10 +65,11 @@ function FileUpload({ fileData, setFileData }) {
 
   const sendMessageHandler = async (ReceiverId) => {
     try {
+      const MainUri = import.meta.env.VITE_MainUri;
       setloading(true);
       const {fileUrl,fileType,fileName,fileSize} = await uploadFile(fileData);
       const res = await axios.post(
-        `http://localhost:7464/user/message/file/send/${ReceiverId}`,
+        `${MainUri}/user/message/file/send/${ReceiverId}`,
         { TextMsg, fileData: fileUrl,fileType,fileName,fileSize },
         {
           withCredentials: true,

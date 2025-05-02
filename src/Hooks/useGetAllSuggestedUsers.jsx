@@ -11,9 +11,9 @@ function useGetAllSuggestedUsers()
     useEffect(()=>{
         const fetchAllSuggestedUsers=async()=>
         {
-            const Uri=import.meta.env.VITE_FetchAllsuggestedusers;
+            const MainUri=import.meta.env.VITE_MainUri;
             try {
-                const response = await axios.get(Uri,{
+                const response = await axios.get(`${MainUri}/user/suggested`,{
                     headers:{'Content-Type':'application/json'},
                     withCredentials: true,
                 });

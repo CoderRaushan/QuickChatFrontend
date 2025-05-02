@@ -10,9 +10,9 @@ function useGetAllPosts()
     useEffect(()=>{
         const fetchAllPosts=async()=>
         {
-            const Uri=import.meta.env.VITE_FetchPosts;
+            const MainUri=import.meta.env.VITE_MainUri;
             try {
-                const response = await axios.get(Uri,{
+                const response = await axios.get(`${MainUri}/user/post/all`,{
                     headers:{'Content-Type':'application/json'},
                     withCredentials: true,
                 });

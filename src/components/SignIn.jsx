@@ -54,11 +54,8 @@ const Navigate=useNavigate();
         password: formData.password,
       };
   
-      const siginUri = import.meta.env.VITE_login;
-      // console.log("Sending request to:", siginUri);
-      // console.log("User Data:", userdata);
-  
-      const response = await axios.post(siginUri, userdata,{ 
+      const MainUri = import.meta.env.VITE_MainUri;
+      const response = await axios.post(`${MainUri}/user/signin`, userdata,{ 
         withCredentials: true,
         headers: { "Content-Type": "application/json" }
       });
@@ -78,20 +75,19 @@ const Navigate=useNavigate();
       setloading(false);
     }
   };
+  const MainUri= import.meta.env.VITE_MainUri;
   const callGoogle = async (e) => {
-    const GoogleUri = import.meta.env.VITE_GooglLOGIN;
+    const GoogleUri =  `${MainUri}/auth/google`
     e.preventDefault();
     window.location.href = GoogleUri;
   };
   const callGithub = async (e) => {
-    const GoogleUri = import.meta.env.VITE_githubLOGIN;
     e.preventDefault();
-    window.location.href = GoogleUri;
+    window.location.href = `${MainUri}/auth/github`;
   };
   const callYoutube = async (e) => {
-    const youtubeUri = import.meta.env.VITE_youtubeLOGIN;
     e.preventDefault();
-    window.location.href = youtubeUri;
+    window.location.href =`${MainUri}/auth/youtube`;
   };
 // useEffect(()=>{
 //   if(user)
