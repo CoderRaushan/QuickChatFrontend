@@ -5,22 +5,22 @@ import { useSelector } from "react-redux";
 import GetAllMessages from "../Hooks/useGetAllMessages.jsx";
 import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
 import { CheckCheck, Check } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { BsFilePdf } from "react-icons/bs";
 
-// Format time utility
 function formatTime(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function Messages({ selectedUsers }) {
-  useGetRTMmessage();
+  const typingUser = useGetRTMmessage(); // 👈 capture typing user
   GetAllMessages();
 
   const { messages } = useSelector((store) => store.chat);
   const { user } = useSelector((store) => store.auth);
   const messagesEndRef = useRef(null);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -32,7 +32,7 @@ function Messages({ selectedUsers }) {
   );
 
   return (
-    <div className="overflow-y-auto flex-1 p-4">
+    <div className="overflow-y-auto flex-1 p-4 pb-16">
       <div className="flex justify-center">
         <div className="flex flex-col items-center justify-center">
           <Avatar className="h-20 w-20">
@@ -60,11 +60,8 @@ function Messages({ selectedUsers }) {
           return (
             <div
               key={msg._id}
-              className={`flex ${
-                isSender ? "justify-end" : "justify-start"
-              } gap-2`}
+              className={`flex ${isSender ? "justify-end" : "justify-start"} gap-2`}
             >
-              {/* Receiver avatar (only at block start) */}
               {!isSender && isFirstMessageOfReceiverBlock && (
                 <Avatar className="w-8 h-8 self-start">
                   <Link to={`/profile/${selectedUsers?._id}`}>
@@ -76,30 +73,23 @@ function Messages({ selectedUsers }) {
                   </Link>
                 </Avatar>
               )}
-
-              {/* Spacer for alignment when no avatar */}
               {!isSender && !isFirstMessageOfReceiverBlock && (
                 <div className="w-8 h-8" />
               )}
 
-              {/* Message bubble */}
               <div className="flex flex-col items-start max-w-[80%]">
                 <div
                   className={`relative p-2 rounded-lg break-words ${
-                    isSender
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-black"
+                    isSender ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
                   }`}
                 >
                   <div className="flex flex-col gap-2">
-                    {/* Receiver name (only at block start) */}
                     {isFirstMessageOfReceiverBlock && (
                       <span className="text-sm font-semibold text-gray-600 mb-1">
                         {selectedUsers?.username}
                       </span>
                     )}
 
-                    {/* File Handling */}
                     {isFilePresent &&
                       (() => {
                         const fileUrl = String(msg?.file?.url || "");
@@ -107,13 +97,11 @@ function Messages({ selectedUsers }) {
                         const mimeType = msg?.file?.mimetype || "";
                         const fileSizeBytes = msg?.file?.size || 0;
 
-                        // Extract extension from either filename or mimetype
                         const fileExtension =
                           fileName.split(".").pop()?.toLowerCase() ||
                           mimeType.split("/").pop()?.toLowerCase() ||
                           "";
 
-                        // Convert bytes to human-readable format (e.g., "2.4 KB")
                         const formatSize = (bytes) => {
                           if (bytes === 0) return "0 KB";
                           const k = 1024;
@@ -174,9 +162,7 @@ function Messages({ selectedUsers }) {
                         );
 
                         if (
-                          ["jpg", "jpeg", "png", "gif", "webp"].includes(
-                            fileExtension
-                          )
+                          ["jpg", "jpeg", "png", "gif", "webp"].includes(fileExtension)
                         )
                           return renderImage();
                         if (fileExtension === "pdf") return renderPDF();
@@ -199,9 +185,9 @@ function Messages({ selectedUsers }) {
                           </div>
                         );
                       })()}
-                    {/* Text message */}
+
                     {isTextPresent && <span>{msg.messages}</span>}
-                    {/* Timestamp and Status */}
+
                     <div className="flex justify-end items-center gap-1 text-xs mt-1">
                       <span>{formatTime(msg.createdAt)}</span>
                       {isSender && (
@@ -209,8 +195,7 @@ function Messages({ selectedUsers }) {
                           {msg.status === "sent" && (
                             <Check size={14} className="text-gray-300" />
                           )}
-                          {(msg.status === "delivered" ||
-                            msg.status === "seen") && (
+                          {(msg.status === "delivered" || msg.status === "seen") && (
                             <CheckCheck
                               size={14}
                               className={`transition-colors duration-300 ${
@@ -229,11 +214,39 @@ function Messages({ selectedUsers }) {
             </div>
           );
         })}
+
+        {/* Typing Indicator */}
+        {typingUser && (
+          <div className="flex justify-start gap-2">
+            <Avatar className="w-8 h-8 self-start">
+              <AvatarImage src={selectedUsers?.profilePicture} />
+              <AvatarFallback>{selectedUsers?.username[0]}</AvatarFallback>
+            </Avatar>
+
+            <div className="flex flex-col items-start max-w-[80%]">
+              <div className="bg-gray-200 text-black p-2 rounded-lg">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-gray-600 mb-1">
+                    {selectedUsers?.username}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {/* <span className="italic text-gray-600">typing</span> */}
+                    <span className="flex gap-1 ml-1">
+                      <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></span>
+                      <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-150"></span>
+                      <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-300"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
     </div>
   );
-  
 }
 
 export default Messages;
