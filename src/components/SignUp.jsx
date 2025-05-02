@@ -104,7 +104,7 @@ const SignupForm = () => {
         name: formData.name,
       };
       const MainUri= import.meta.env.VITE_MainUri;
-      const signupUri = `${MainUri}/auth/signupl`;
+      const signupUri = `${MainUri}/auth/signup`;
       const response = await axios.post(signupUri, userdata);
       if (response.data.success) {
         navigate("/signin");
