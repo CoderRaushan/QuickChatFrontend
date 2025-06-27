@@ -30,3 +30,5 @@ EXPOSE 80
 
 # Run Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
+# how to run this using command => docker-compose up --build
+
