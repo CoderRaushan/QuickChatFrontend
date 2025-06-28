@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import GetAllMessages from "../Hooks/useGetAllMessages.jsx";
 import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
 import { CheckCheck, Check } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BsFilePdf } from "react-icons/bs";
 
 function formatTime(dateStr) {
@@ -14,12 +14,14 @@ function formatTime(dateStr) {
 }
 
 function Messages({ selectedUsers }) {
-  const typingUser = useGetRTMmessage(); // 👈 capture typing user
+  const typingUser = useGetRTMmessage();
   GetAllMessages();
 
   const { messages } = useSelector((store) => store.chat);
   const { user } = useSelector((store) => store.auth);
   const messagesEndRef = useRef(null);
+  const [openImage, setOpenImage] = useState(null);
+  const [openVideo, setopenVideo] = useState(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,7 +62,9 @@ function Messages({ selectedUsers }) {
           return (
             <div
               key={msg._id}
-              className={`flex ${isSender ? "justify-end" : "justify-start"} gap-2`}
+              className={`flex ${
+                isSender ? "justify-end" : "justify-start"
+              } gap-2`}
             >
               {!isSender && isFirstMessageOfReceiverBlock && (
                 <Avatar className="w-8 h-8 self-start">
@@ -80,7 +84,9 @@ function Messages({ selectedUsers }) {
               <div className="flex flex-col items-start max-w-[80%]">
                 <div
                   className={`relative p-2 rounded-lg break-words ${
-                    isSender ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                    isSender
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-black"
                   }`}
                 >
                   <div className="flex flex-col gap-2">
@@ -143,9 +149,26 @@ function Messages({ selectedUsers }) {
                           <div className="flex flex-col items-start">
                             <img
                               src={fileUrl}
+                              onClick={() => setOpenImage(fileUrl)}
                               alt="attachment"
                               className="w-full h-auto max-h-72 rounded-lg object-cover cursor-pointer"
                             />
+                            {/* Fullscreen Modal */}
+                            {openImage && (
+                              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+                                <button
+                                  onClick={() => setOpenImage(null)}
+                                  className="absolute top-4 right-4 text-white text-3xl font-bold hover:text-red-500"
+                                >
+                                  &times;
+                                </button>
+                                <img
+                                  src={openImage}
+                                  alt="Full View"
+                                  className="max-w-screen max-h-screen object-contain rounded-lg"
+                                />
+                              </div>
+                            )}
                           </div>
                         );
 
@@ -154,15 +177,52 @@ function Messages({ selectedUsers }) {
                             <video
                               controls
                               src={fileUrl}
-                              className="w-full max-h-72 rounded-lg"
-                            >
-                              Your browser does not support the video tag.
-                            </video>
+                              className="w-full max-h-72 rounded-lg pointer-events-auto"
+                              onClick={(e) => {
+                                // Prevent click on video body from triggering play or modal
+                                // But allow native play button to work
+                                const rect =
+                                  e.currentTarget.getBoundingClientRect();
+                                const x = e.clientX - rect.left;
+                                const y = e.clientY - rect.top;
+
+                                // Approximate region for center play button
+                                const centerX = rect.width / 2;
+                                const centerY = rect.height / 2;
+                                const radius = 40; // Adjust this to the play button size
+
+                                const isPlayButtonClick =
+                                  Math.pow(x - centerX, 2) +
+                                    Math.pow(y - centerY, 2) <=
+                                  Math.pow(radius, 2);
+
+                                if (!isPlayButtonClick) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }
+                              }}
+                            ></video>
+                            {/* Fullscreen Modal */}
+                            {openVideo === fileUrl && (
+                              <div
+                                className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+                                onClick={() => setopenVideo(null)}
+                              >
+                                <video
+                                  controls
+                                  autoPlay
+                                  src={fileUrl}
+                                  className="max-w-full max-h-full rounded-lg"
+                                />
+                              </div>
+                            )}
                           </div>
                         );
 
                         if (
-                          ["jpg", "jpeg", "png", "gif", "webp"].includes(fileExtension)
+                          ["jpg", "jpeg", "png", "gif", "webp"].includes(
+                            fileExtension
+                          )
                         )
                           return renderImage();
                         if (fileExtension === "pdf") return renderPDF();
@@ -195,7 +255,8 @@ function Messages({ selectedUsers }) {
                           {msg.status === "sent" && (
                             <Check size={14} className="text-gray-300" />
                           )}
-                          {(msg.status === "delivered" || msg.status === "seen") && (
+                          {(msg.status === "delivered" ||
+                            msg.status === "seen") && (
                             <CheckCheck
                               size={14}
                               className={`transition-colors duration-300 ${

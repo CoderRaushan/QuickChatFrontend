@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { MessageCircleCode, ArrowLeft } from "lucide-react";
 import Messages from "./Messages.jsx";
 import { setMessages } from "../ReduxStore/ChatSlice.js";
-import axios from "axios";
-import { toast } from "react-toastify";
 import { useSocket } from "../SocketContext.js";
 import { FiPaperclip } from "react-icons/fi";
 import FileUpload from "./FileUpload.jsx";
