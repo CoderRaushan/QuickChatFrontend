@@ -16,9 +16,9 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
   const [caption, setcaption] = useState("");
   const [ImagePreview, setImagePreview] = useState("");
   const [loading, setloading] = useState(false);
-  const dispatch=useDispatch();
-  const {post}=useSelector(store=>store.post);
-  const {user}=useSelector(store=>store.auth);
+  const dispatch = useDispatch();
+  const { post } = useSelector((store) => store.post);
+  const { user } = useSelector((store) => store.auth);
   const filechangeHanlder = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -29,32 +29,57 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
   };
   const CreatePostHandler = async (e) => {
     e.preventDefault();
-    const formdata=new FormData();
-    formdata.append("caption",caption);
-    if(ImagePreview) formdata.append("image",file);
-    const MainUri=import.meta.env.VITE_MainUri;
-    try {
-        setloading(true);
-        const res= await axios.post(`${MainUri}/user/post/add`,formdata,
-        {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials:true
-        });
-        if(res.data.success)
-        {
-         dispatch(setPosts([res.data.post,...post]));
-         
-         toast.success(res.data.message || "post successfully");
-        }
-        else 
-        {
+    setloading(true);
+    if (!file) {
+      toast.error("Please select an image to upload");
+      return;
+    }
+    const MainUri = import.meta.env.VITE_MainUri;
+    const res = await axios.post(
+      `${MainUri}/user/message/get-upload-url`,
+      {
+        fileType: file.type,
+        originalName: file.name,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    const uploadUrl = res.data.uploadUrl || "";
+    const fileUrl = res.data.fileUrl || "";
+    if (res.data.success && uploadUrl && fileUrl) {
+      const response = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+      if (response) {
+        try {
+          const res = await axios.post(`${MainUri}/user/post/add`, {caption,fileUrl}, {
+            withCredentials: true,
+          });
+          if (res.data.success) {
+            dispatch(setPosts([res.data.post, ...post]));
+            toast.success(res.data.message || "post successfully");
+            setcaption("");
+            setfile("");
+            setImagePreview("");
+            setcreatePostOpen(false);
+          } else {
             toast.error(res.data.message || "post failed");
+          }
+        } catch (error) {
+          toast.error(error.response.data.message || "post falied");
+        } finally {
+          setloading(false);
+          setcreatePostOpen(false);
         }
-    } catch (error) {
-        toast.error(error.response.data.message || "post falied");
-    }finally{
-        setloading(false);
-        setcreatePostOpen(false);
+      }
+      console.log(response);
+    } else {
+      console.log("file not uploaded to aws s3");
     }
   };
   return (
@@ -67,11 +92,17 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         </VisuallyHidden>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage className="w-10 h-10 rounded-full" src={user?.profilePicture} alt="User Avatar" />
+            <AvatarImage
+              className="w-10 h-10 rounded-full"
+              src={user?.profilePicture}
+              alt="User Avatar"
+            />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">{user?.username || "username"}</h1>
+            <h1 className="font-semibold text-xs">
+              {user?.username || "username"}
+            </h1>
             <span className="text-gray-600 text-xs">{user?.bio}</span>
           </div>
         </div>

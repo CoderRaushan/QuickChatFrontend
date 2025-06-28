@@ -11,7 +11,6 @@ import { setPosts } from "../ReduxStore/PostSlice.js";
 import { toast } from "react-toastify";
 function PostDialog({ PostOpen, setPostOpen,post }) {
   const [commentText, setcommentText] = useState("");
-//   const { SelectedPost } = useSelector((store) => store.post);
   const Posts = useSelector((store) => store.post);
   const dispatch=useDispatch();
   const [CommentData,setCommentData]=useState([]);
