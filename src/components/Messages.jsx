@@ -28,11 +28,10 @@ function Messages({ selectedUsers }) {
   }, [messages]);
 
   const filteredMessages = messages?.filter(
-    (msg) =>
+      (msg) =>
       (msg?.senderId === user?._id && msg?.receiverId === selectedUsers?._id) ||
       (msg?.senderId === selectedUsers?._id && msg?.receiverId === user?._id)
   );
-
   return (
     <div className="overflow-y-auto flex-1 p-4 pb-16">
       <div className="flex justify-center">
@@ -218,7 +217,6 @@ function Messages({ selectedUsers }) {
                             )}
                           </div>
                         );
-
                         if (
                           ["jpg", "jpeg", "png", "gif", "webp"].includes(
                             fileExtension
@@ -228,7 +226,6 @@ function Messages({ selectedUsers }) {
                         if (fileExtension === "pdf") return renderPDF();
                         if (["mp4", "webm", "ogg"].includes(fileExtension))
                           return renderVideo();
-
                         return (
                           <div className="flex flex-col items-start">
                             <a

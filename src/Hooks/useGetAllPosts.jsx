@@ -18,6 +18,7 @@ function useGetAllPosts()
                 });
                 if(response.data.success)
                 {
+                    // console.log(response.data.posts);
                     dispatch(setPosts(response.data.posts));
                     // toast.success(response.data.message || "Posts Fetched Successfully!");
                 }

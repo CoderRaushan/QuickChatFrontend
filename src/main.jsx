@@ -21,11 +21,12 @@ createRoot(document.getElementById("root")).render(
     </Provider>
     <ToastContainer
       position="top-center"
-      autoClose={5000}
+      autoClose={1000}
       hideProgressBar={false}
       closeOnClick
       pauseOnHover
       draggable
+      limit={1}
     />
   </StrictMode>
 );

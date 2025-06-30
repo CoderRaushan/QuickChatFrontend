@@ -3,6 +3,7 @@ import Post from "./Post.jsx";
 import { useSelector } from "react-redux";
 function Posts() {
   const Posts = useSelector((store) => store.post);
+  // console.log("Posts ",Posts)
   return (
     <div>
       {Posts.post.map((post) => (

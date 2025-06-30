@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 function CommentDialog({ CommentOpen, setCommentOpen }) {
   const [commentText, setcommentText] = useState("");
   const { SelectedPost } = useSelector((store) => store.post);
-  const {user}=useSelector(store=>store.auth);
+  const { user } = useSelector((store) => store.auth);
   const Posts = useSelector((store) => store.post);
   const dispatch = useDispatch();
   const [CommentData, setCommentData] = useState([]);
@@ -71,11 +71,102 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
         </DialogDescription>
         <div className="flex flex-1">
           <div className="w-1/2">
-            <img
-              src={SelectedPost?.image}
-              alt="post_img"
-              className="w-full h-full object-cover rounded-l-lg"
-            />
+            {(() => {
+              const fileUrl = SelectedPost?.file?.url || "";
+              const fileType = SelectedPost?.file?.mimetype || "";
+
+              const isVideo =
+                fileType.startsWith("video/") ||
+                /\.(mp4|webm|ogg)$/i.test(fileUrl);
+
+              const isPDF =
+                fileType === "application/pdf" || fileUrl.endsWith(".pdf");
+
+              const isAudio =
+                fileType.startsWith("audio/") ||
+                /\.(mp3|wav|aac|flac|opus)$/i.test(fileUrl);
+
+              const isDocument =
+                /(msword|vnd.openxmlformats-officedocument.wordprocessingml.document)/.test(
+                  fileType
+                ) || /\.(doc|docx|odt|rtf|txt)$/i.test(fileUrl);
+
+              if (isDocument) {
+                return (
+                  <div className="my-4">
+                    <iframe
+                      src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                        fileUrl
+                      )}&embedded=true`}
+                      className="w-full h-72 rounded-md"
+                      title="Document Viewer"
+                      frameBorder="0"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                    <p className="mt-2 text-sm text-gray-600">
+                      Can't preview this document?{" "}
+                      <a
+                        href={fileUrl}
+                        download
+                        className="text-blue-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download here
+                      </a>
+                    </p>
+                  </div>
+                );
+              }
+
+              if (isPDF) {
+                return (
+                  <iframe
+                    src={fileUrl}
+                    className="w-full h-72 rounded-lg"
+                    title="PDF Viewer"
+                  />
+                );
+              }
+
+              if (isAudio) {
+                return (
+                  <div className="my-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md flex items-center space-x-4">
+                    <i className="fa-solid fa-music text-2xl text-blue-600 dark:text-blue-400"></i>
+                    <audio
+                      src={fileUrl}
+                      controls
+                      className="w-full focus:outline-none"
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                );
+              }
+
+              if (isDocument) {
+                return (
+                  <iframe
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                      fileUrl
+                    )}&embedded=true`}
+                    className="w-full h-72 rounded-md"
+                    title="Document Viewer"
+                  />
+                );
+              }
+
+              // Default fallback for images
+              return (
+                <img
+                  src={fileUrl}
+                  alt="Post"
+                  className="w-full h-full object-cover aspect-square rounded-sm"
+                />
+              );
+            })()}
           </div>
           <div className="w-1/2 flex flex-col justify-between">
             <div className="flex items-center justify-between p-4">
@@ -98,9 +189,7 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
                 </DialogTrigger>
                 <DialogContent className="flex flex-col items-center text-sm text-center">
                   <div className="cursor-pointer w-full text-[#ED4956] font-bold">
-                    {
-                      user?._id!==SelectedPost?.author?._id && "Unfollow"
-                    }
+                    {user?._id !== SelectedPost?.author?._id && "Unfollow"}
                   </div>
                   <div className="cursor-pointer w-full">Add to favorites</div>
                 </DialogContent>

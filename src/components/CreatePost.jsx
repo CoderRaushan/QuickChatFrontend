@@ -13,6 +13,7 @@ import { setPosts } from "../ReduxStore/PostSlice.js";
 function CreatePost({ createPostOpen, setcreatePostOpen }) {
   const imageRef = useRef();
   const [file, setfile] = useState("");
+  // console.log(file);
   const [caption, setcaption] = useState("");
   const [ImagePreview, setImagePreview] = useState("");
   const [loading, setloading] = useState(false);
@@ -57,10 +58,18 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
       });
       if (response) {
         try {
-          const res = await axios.post(`${MainUri}/user/post/add`, {caption,fileUrl}, {
+          const res = await axios.post(`${MainUri}/user/post/add`, 
+          {
+            caption,
+            fileUrl,
+            mimetype: file.type, 
+            filename: file.name,
+            size: file.size,
+      }, {
             withCredentials: true,
           });
           if (res.data.success) {
+            console.log("post data",res.data.post);
             dispatch(setPosts([res.data.post, ...post]));
             toast.success(res.data.message || "post successfully");
             setcaption("");
@@ -77,7 +86,6 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
           setcreatePostOpen(false);
         }
       }
-      console.log(response);
     } else {
       console.log("file not uploaded to aws s3");
     }
