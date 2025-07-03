@@ -16,7 +16,6 @@ function formatTime(dateStr) {
 function Messages({ selectedUsers }) {
   const typingUser = useGetRTMmessage();
   GetAllMessages();
-
   const { messages } = useSelector((store) => store.chat);
   const { user } = useSelector((store) => store.auth);
   const messagesEndRef = useRef(null);

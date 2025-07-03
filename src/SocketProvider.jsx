@@ -29,15 +29,15 @@ const SocketProvider = (props) => {
       });
 
       SocketIo.on("follow", (notification) => {//userDetails
-        console.log("follow no");
-        console.log("follow userdetails",notification.author)
+        // console.log("follow no");
+        // console.log("follow userdetails",notification.author)
         dispatch(setAuthUser(notification.author));
         dispatch(setLikeNotification(notification));
       });
       SocketIo.on("unfollow", (notification) => {
-        console.log("unfollow no");
+        // console.log("unfollow no");
         dispatch(setAuthUser(notification.author));
-        console.log("unfollow userdetails",notification.author)
+        // console.log("unfollow userdetails",notification.author)
         dispatch(setLikeNotification(notification));
       });
       return () => {

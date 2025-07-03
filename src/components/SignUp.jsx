@@ -67,7 +67,7 @@ const SignupForm = () => {
 
         toast.success(response.data.message || "Messsage sent successfylly!");
       } else {
-        console.log(response.data.message);
+        // console.log(response.data.message);
         // alert(response.data.message);
         toast.error(response.data.message || "Messsage sending error!");
       }
@@ -117,11 +117,11 @@ const SignupForm = () => {
           name: "",
         });
         setIsCodeSent(false);
-        console.log(response.data.message);
+        // console.log(response.data.message);
         // alert(response.data.message);
         toast.success(response.data.message || "Signup successfylly!");
       } else {
-        console.log(response.data.message);
+        // console.log(response.data.message);
         // alert(response.data.message);
         toast.error(response.data.message || "Signup error!");
       }

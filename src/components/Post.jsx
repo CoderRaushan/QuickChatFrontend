@@ -154,7 +154,7 @@ function Post({ post }) {
     post?.file?.filename?.split(".").pop()?.toLowerCase() ||
     post?.file?.mimetype?.split("/").pop()?.toLowerCase() ||
     "";
-  console.log("fileExtension", fileExtension);
+
   const renderVideo = () => {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);

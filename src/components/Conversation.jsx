@@ -7,16 +7,22 @@ import { setselectedUsers } from "../ReduxStore/authSlice.js";
 import { Button } from "@/components/ui/button";
 import { MessageCircleCode, ArrowLeft } from "lucide-react";
 import Messages from "./Messages.jsx";
-import { setMessages } from "../ReduxStore/ChatSlice.js";
+import {
+  setConversationMap,
+  setMessages,
+  setchatHistory,
+} from "../ReduxStore/ChatSlice.js";
 import { useSocket } from "../SocketContext.js";
 import { FiPaperclip } from "react-icons/fi";
 import FileUpload from "./FileUpload.jsx";
+import axios from "axios";
 function Conversation() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, selectedUsers } = useSelector((store) => store.auth);
-  const { messages, onlineUsers } = useSelector((store) => store.chat);
-  const [mutualFollowers, setMutualFollowers] = useState([]);
+  const { messages, onlineUsers, chatHistory, conversationMap } = useSelector(
+    (store) => store.chat
+  );
   const [TextMsg, setTextMsg] = useState("");
   const socket = useSocket();
   const seenMessageIds = useRef(new Set());
@@ -54,16 +60,38 @@ function Conversation() {
   useEffect(() => {
     seenMessageIds.current.clear();
   }, [selectedUsers]);
-
+  // useEffect(() => {
+  //   dispatch(setCurrentChatUser(selectedUsers));
+  // }, [selectedUsers]);
   useEffect(() => {
-    if (user) {
-      const followingSet = new Set(user.following.map((f) => String(f._id)));
-      const mutuals = user.followers.filter((f) =>
-        followingSet.has(String(f._id))
-      );
-      setMutualFollowers(mutuals);
-      dispatch(setMessages([]));
-    }
+    const fetchConversations = async () => {
+      if (user) {
+        const followingSet = new Set(user.following.map((f) => String(f._id)));
+        const mutuals = user.followers.filter((f) =>
+          followingSet.has(String(f._id))
+        );
+
+        dispatch(setchatHistory(mutuals));
+        dispatch(setMessages([]));
+        const mutualIds = mutuals.map((m) => m._id);
+        const MainUri = import.meta.env.VITE_MainUri;
+
+        const res = await axios.post(
+          `${MainUri}/user/message/conversations/bulk-start`,
+          {
+            userIds: mutualIds,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (res.data.success) {
+          dispatch(setConversationMap(res.data.conversationMap)); // Store in Redux or Context
+        }
+      }
+    };
+    fetchConversations();
   }, [user]);
 
   useEffect(() => {
@@ -84,12 +112,12 @@ function Conversation() {
     dispatch(setMessages([...messages, optimisticMessage]));
     setTextMsg("");
     socket.emit("send-message", {
+      conversationId: selectedUsers?.conversationId,
       receiverId: ReceiverId,
       text: TextMsg,
       tempId,
     });
   };
-
   const typingTimeoutRef = useRef(null);
 
   const handleTyping = () => {
@@ -98,13 +126,13 @@ function Conversation() {
       from: user._id,
       username: user.username,
     });
-  
+
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stop-typing", { to: selectedUsers._id });
     }, 500);
   };
-
+  // console.log("selectedUsers after",selectedUsers);
   return (
     <div className="flex flex-col md:flex-row h-screen ml-[70px] sm:ml-[100px] md:ml-[16%]">
       {/* Message Sidebar */}
@@ -115,21 +143,26 @@ function Conversation() {
       >
         <h1 className="font-bold text-lg mb-4">{user?.username}</h1>
         <h2 className="text-md font-semibold mb-2">Messages</h2>
-        {mutualFollowers.map((mutualuser) => {
-          const isOnline = onlineUsers.includes(mutualuser?._id);
+        {chatHistory?.map((mutualuser) => {
+          const isOnline = onlineUsers?.includes(mutualuser?._id);
           return (
             <div
-              key={mutualuser._id}
+              key={mutualuser?._id}
               className="flex gap-3 items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg"
-              onClick={() => dispatch(setselectedUsers(mutualuser))}
+              onClick={async () => {
+                if (selectedUsers?._id!==mutualuser?._id) {
+                  const conversationId = await conversationMap[mutualuser?._id];
+                  dispatch(setselectedUsers({ ...mutualuser, conversationId }));
+                }
+              }}
             >
               <Avatar>
-                <AvatarImage src={mutualuser.profilePicture} />
-                <AvatarFallback>{mutualuser.username[0]}</AvatarFallback>
+                <AvatarImage src={mutualuser?.profilePicture} />
+                <AvatarFallback>{mutualuser?.username[0]}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <span className="font-medium text-sm">
-                  {mutualuser.username}
+                  {mutualuser?.username}
                 </span>
                 <span
                   className={`text-xs font-bold ${
@@ -143,7 +176,6 @@ function Conversation() {
           );
         })}
       </section>
-
       {/* Chat Section */}
       {selectedUsers ? (
         <section className="flex-1 flex flex-col justify-between">
@@ -154,7 +186,6 @@ function Conversation() {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-
             <Avatar>
               <AvatarImage src={selectedUsers?.profilePicture} />
               <AvatarFallback>{selectedUsers?.username[0]}</AvatarFallback>
@@ -163,9 +194,7 @@ function Conversation() {
               {selectedUsers?.username}
             </div>
           </div>
-
           <Messages selectedUsers={selectedUsers} />
-
           <div className="flex items-center p-4 border-t border-gray-300 relative w-full">
             <input
               value={TextMsg}

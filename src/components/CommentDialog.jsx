@@ -91,6 +91,19 @@ function CommentDialog({ CommentOpen, setCommentOpen }) {
                   fileType
                 ) || /\.(doc|docx|odt|rtf|txt)$/i.test(fileUrl);
 
+              if (isVideo) {
+                return (
+                  <div className="my-4 rounded-lg overflow-hidden shadow-md">
+                    <video
+                      src={fileUrl}
+                      controls
+                      className="w-full h-72 object-contain bg-black rounded-lg"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                );
+              }
               if (isDocument) {
                 return (
                   <div className="my-4">

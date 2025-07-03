@@ -3,7 +3,8 @@ import authSlice from "./authSlice.js";
 import PostSlice from "./PostSlice.js";
 import setisLogin from "./LoginSlice.js";
 import ChatSlice from "./ChatSlice.js";
-import RealTimeNotificationSlice from "./RealTimeNotificationSlice.js"
+import RealTimeNotificationSlice from "./RealTimeNotificationSlice.js";
+// import chatHistory from "./ChatSlice.js"
 import {
   persistReducer,
   FLUSH,
@@ -25,6 +26,7 @@ auth:authSlice,
 post:PostSlice,
 isLogin:setisLogin,
 chat:ChatSlice,
+// chatHistory,
 Notification:RealTimeNotificationSlice,
 });
 

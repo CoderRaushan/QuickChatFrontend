@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +12,15 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setMessages } from "../ReduxStore/ChatSlice.js";
 import { toast } from "react-toastify";
+import { useSocket } from "../SocketContext.js";
 function FileUpload({ fileData, setFileData }) {
   const [filePreview, setfilePreview] = useState(null);
   const [TextMsg, setTextMsg] = useState("");
   const dispatch = useDispatch();
-  const { selectedUsers } = useSelector((store) => store.auth);
+  const { selectedUsers,user } = useSelector((store) => store.auth);
   const { messages } = useSelector((store) => store.chat);
   const [loading, setloading] = useState(false);
+  const socket = useSocket();
   useEffect(() => {
     if (fileData) {
       const fileurl = URL.createObjectURL(fileData);
@@ -52,49 +55,95 @@ function FileUpload({ fileData, setFileData }) {
       } else {
         console.log("file not uploaded to aws s3");
       }
-      return { 
-        fileUrl, 
-        fileType: file.type, 
+      return {
+        fileUrl,
+        fileType: file.type,
         fileName: file.name,
         fileSize: file.size,
-       };
+      };
     } catch (error) {
       console.log(error);
     }
   }
 
+  // const sendMessageHandler = async (ReceiverId) => {
+  //   try {
+  //     setloading(true);
+  //     const MainUri = import.meta.env.VITE_MainUri;
+  //     const { fileUrl, fileType, fileName, fileSize } = await uploadFile(
+  //       fileData
+  //     );
+  //     const res = await axios.post(
+  //       `${MainUri}/user/message/file/send/${ReceiverId}`,
+  //       { TextMsg,fileUrl,fileType,fileName,fileSize },
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     if (res.data.success ) {
+  //       setloading(false);
+  //       const newMessage = res.data.newMessage;
+  //       if (
+  //         selectedUsers &&
+  //         (newMessage.senderId === selectedUsers._id ||
+  //           newMessage.receiverId === selectedUsers._id)
+  //       ) {
+  //         dispatch(setMessages([...messages, newMessage]));
+  //       }
+  //       setTextMsg("");
+  //       setFileData(null);
+  //       toast.success(res.data.message);
+  //     } else {
+  //       toast.error(res.data.message);
+  //     }
+  // } catch (error) {
+  //   console.error("Error sending message:", error);
+  //   setloading(false);
+  // };
   const sendMessageHandler = async (ReceiverId) => {
     try {
-      const MainUri = import.meta.env.VITE_MainUri;
       setloading(true);
-      const {fileUrl,fileType,fileName,fileSize} = await uploadFile(fileData);
-      const res = await axios.post(
-        `${MainUri}/user/message/file/send/${ReceiverId}`,
-        { TextMsg, fileData: fileUrl,fileType,fileName,fileSize },
-        {
-          withCredentials: true,
-        }
-      );
-      if (res.data.success ) {
-        setloading(false);
-        const newMessage = res.data.newMessage;
-        if (
-          selectedUsers &&
-          (newMessage.senderId === selectedUsers._id ||
-            newMessage.receiverId === selectedUsers._id)
-        ) {
-          dispatch(setMessages([...messages, newMessage]));
-        }
-        setTextMsg("");
-        setFileData(null);
-        toast.success(res.data.message);
-      } else {
-        toast.error(res.data.message);
+      const tempId = `temp-${uuidv4()}`;
+      let fileDetails = {};
+      if (fileData) {
+        const { fileUrl, fileType, fileName, fileSize } = await uploadFile(
+          fileData
+        );
+        fileDetails = { fileUrl, fileType, fileName, fileSize };
       }
+
+      const optimisticMessage = {
+        _id: tempId,
+        senderId: user._id,
+        receiverId: ReceiverId,
+        messages: TextMsg,
+        status: "sent",
+        createdAt: new Date().toISOString(),
+        ...fileDetails,
+      };
+
+      // Show optimistic message
+      dispatch(setMessages([...messages, optimisticMessage]));
+      setTextMsg("");
+      setFileData(null);
+      setloading(false);
+      // toast.success(res.data.message);
+
+      // Emit through socket with file + text
+      socket.emit("send-message", {
+        conversationId:selectedUsers?.conversationId,
+        receiverId: ReceiverId,
+        text: TextMsg,
+        tempId,
+        ...fileDetails,
+      });
     } catch (error) {
-      console.log(error);
+      // toast.error(res.data.message);
+      console.error("Error sending message:", error);
+      setloading(false);
     }
   };
+
   return (
     <Dialog
       open={!!fileData}

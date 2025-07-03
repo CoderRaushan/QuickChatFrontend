@@ -9,15 +9,14 @@ function useGetRTMmessage() {
   const dispatch = useDispatch();
   const messages = useSelector((store) => store.chat.messages);
   const messagesRef = useRef([]);
-  const [typingUser, setTypingUser] = useState(null); // 👈 new state
-
+  const [typingUser, setTypingUser] = useState(null); 
+  // console.log("messages",messages);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
     if (!socket || !user) return;
-
     const handleNewMessage = (newmsg) => {
       if (
         (newmsg.senderId === user._id && newmsg.receiverId === selectedUsers?._id) ||

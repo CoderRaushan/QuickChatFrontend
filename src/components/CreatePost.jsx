@@ -58,18 +58,21 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
       });
       if (response) {
         try {
-          const res = await axios.post(`${MainUri}/user/post/add`, 
-          {
-            caption,
-            fileUrl,
-            mimetype: file.type, 
-            filename: file.name,
-            size: file.size,
-      }, {
-            withCredentials: true,
-          });
+          const res = await axios.post(
+            `${MainUri}/user/post/add`,
+            {
+              caption,
+              fileUrl,
+              mimetype: file.type,
+              filename: file.name,
+              size: file.size,
+            },
+            {
+              withCredentials: true,
+            }
+          );
           if (res.data.success) {
-            console.log("post data",res.data.post);
+            // console.log("post data",res.data.post);
             dispatch(setPosts([res.data.post, ...post]));
             toast.success(res.data.message || "post successfully");
             setcaption("");

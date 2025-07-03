@@ -17,7 +17,7 @@ import axios from "axios";
 
 function EditProfile() {
   const { user } = useSelector((state) => state.auth);
-  console.log(user._id);
+  // console.log(user._id);
   const imageRef = useRef();
   const [Loading, setLoading] = useState(false);
   const [input, setInput] = useState({
