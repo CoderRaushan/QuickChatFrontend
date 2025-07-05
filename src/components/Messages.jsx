@@ -307,519 +307,87 @@
 // }
 
 // export default Messages;
-// import React, { useCallback, useEffect, useRef, useState } from "react";
-// import { useSelector } from "react-redux";
-// import { Link } from "react-router-dom";
-// import axios from "axios";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { Button } from "@/components/ui/button";
-// import { CheckCheck, Check } from "lucide-react";
-// import { BsFilePdf } from "react-icons/bs";
-// import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
-
-// /* --- helper --- */
-// function formatTime(dateStr) {
-//   return new Date(dateStr).toLocaleTimeString([], {
-//     hour: "2-digit",
-//     minute: "2-digit",
-//   });
-// }
-
-// /* === MAIN COMPONENT === */
-// function Messages({ selectedUsers }) {
-//   /* ──────────────────────────── state ──────────────────────────── */
-//   const { user } = useSelector((store) => store.auth);
-//   const typingUser = useGetRTMmessage();
-
-//   const LIMIT = 6; // how many per page
-//   const [pages, setPages] = useState([]); // array of page arrays
-//   const [skip, setSkip] = useState(0); // next skip value
-//   const [hasMore, setHasMore] = useState(true);
-//   const loadingRef = useRef(false);
-
-//   /* ────────────────────────── refs ─────────────────────────────── */
-//   const listRef = useRef(null); // scrollable div
-//   const bottomRef = useRef(null); // sentinel to scroll‑into‑view
-//   const prevScrollHeight = useRef(0); // for keeping position after prepend
-
-//   /* ───────────────────────── fetch page ────────────────────────── */
-//   const fetchPage = useCallback(async () => {
-//     if (loadingRef.current || !hasMore) return;
-//     loadingRef.current = true;
-
-//     try {
-//       const MainUri = import.meta.env.VITE_MainUri;
-//       const { data } = await axios.get(
-//         `${MainUri}/user/message/${selectedUsers?.conversationId}?limit=${LIMIT}&skip=${skip}`,
-//         {
-//           headers: { "Content-Type": "application/json" },
-//           withCredentials: true,
-//         }
-//       );
-//       const newMsgs = data?.messages || [];
-
-//       /* reverse → oldest first (top)… newest last (bottom) */
-//       newMsgs.reverse();
-
-//       setPages((prev) => [newMsgs, ...prev]); // prepend
-//       setSkip((prev) => prev + LIMIT);
-//       if (newMsgs.length < LIMIT) setHasMore(false);
-//     } catch (err) {
-//       console.error("Unable to fetch messages:", err);
-//     } finally {
-//       loadingRef.current = false;
-//     }
-//   }, [selectedUsers?._id, skip, hasMore]);
-
-//   /* ─────────── initial load (latest messages) ─────────── */
-//   useEffect(() => {
-//     // reset when conversation changes
-//     setPages([]);
-//     setSkip(0);
-//     setHasMore(true);
-//   }, [selectedUsers?._id]);
-
-//   useEffect(() => {
-//     fetchPage();
-//   }, [fetchPage]);
-
-//   /* ─────────────── scroll behaviour ─────────────── */
-//   /* keep scroll at bottom when new real‑time msg arrives */
-//   useEffect(() => {
-//     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-//   }, [pages]);
-
-//   /* detect scroll‑to‑top to load more */
-//   const onScroll = () => {
-//     const node = listRef.current;
-//     if (!node || loadingRef.current || !hasMore) return;
-
-//     if (node.scrollTop <= 0) {
-//       prevScrollHeight.current = node.scrollHeight;
-//       fetchPage();
-//     }
-//   };
-
-//   /* after older page prepended, maintain position */
-//   useEffect(() => {
-//     if (!prevScrollHeight.current) return;
-//     const node = listRef.current;
-//     const diff = node.scrollHeight - prevScrollHeight.current;
-//     node.scrollTop = diff;
-//     prevScrollHeight.current = 0;
-//   }, [pages]);
-
-//   /* ─────────────── flatten pages for rendering ─────────────── */
-//   const messages = pages.flat();
-
-//   /* ───────────────────────── render ───────────────────────── */
-//   return (
-//     <div className="flex-1 overflow-hidden">
-//       {/* header area */}
-//       <div className="flex justify-center p-4">
-//         <div className="flex flex-col items-center">
-//           <Avatar className="h-20 w-20">
-//             <AvatarImage src={selectedUsers?.profilePicture} />
-//             <AvatarFallback>U</AvatarFallback>
-//           </Avatar>
-//           <span>{selectedUsers?.username}</span>
-//           <Link to={`/profile/${selectedUsers?._id}`}>
-//             <Button className="h-8 my-2" variant="secondary">
-//               View Profile
-//             </Button>
-//           </Link>
-//         </div>
-//       </div>
-
-//       {/* messages list */}
-//       <div
-//         ref={listRef}
-//         onScroll={onScroll}
-//         className="flex flex-col gap-3 px-4 overflow-y-auto h-[calc(100vh-200px)]"
-//         style={{ scrollBehavior: "smooth" }}
-//       >
-//         {hasMore && (
-//           <div className="text-center text-sm text-gray-400">
-//             {loadingRef.current ? "Loading…" : "Scroll up for older messages"}
-//           </div>
-//         )}
-
-//         {messages.map((msg, index) => {
-//           /* …………… your original bubble rendering logic kept intact …………… */
-//           const isSender = msg.senderId === user._id;
-//           const isFilePresent = Boolean(msg?.file);
-//           const isTextPresent = Boolean(msg?.messages);
-//           const isFirstMessageOfReceiverBlock =
-//             !isSender &&
-//             (index === 0 || messages[index - 1].senderId === user._id);
-
-//           return (
-//             <div
-//               key={msg._id}
-//               className={`flex ${
-//                 isSender ? "justify-end" : "justify-start"
-//               } gap-2`}
-//             >
-//               {/* avatar for receiver blocks */}
-//               {!isSender && isFirstMessageOfReceiverBlock && (
-//                 <Avatar className="w-8 h-8 self-start">
-//                   <Link to={`/profile/${selectedUsers?._id}`}>
-//                     <AvatarImage
-//                       src={selectedUsers?.profilePicture}
-//                       className="cursor-pointer"
-//                     />
-//                     <AvatarFallback>U</AvatarFallback>
-//                   </Link>
-//                 </Avatar>
-//               )}
-//               {!isSender && !isFirstMessageOfReceiverBlock && (
-//                 <div className="w-8 h-8" />
-//               )}
-
-//               {/* bubble */}
-//               <div className="flex flex-col items-start max-w-[80%]">
-//                 <div
-//                   className={`relative p-2 rounded-lg break-words ${
-//                     isSender
-//                       ? "bg-blue-500 text-white"
-//                       : "bg-gray-200 text-black"
-//                   }`}
-//                 >
-//                   {/* username label */}
-//                   {isFirstMessageOfReceiverBlock && (
-//                     <span className="text-sm font-semibold text-gray-600 mb-1">
-//                       {selectedUsers?.username}
-//                     </span>
-//                   )}
-
-//                   {/* file / image / video etc. */}
-//                   {/* keep your original file‑rendering helpers here */}
-
-//                   {isTextPresent && <span>{msg.messages}</span>}
-
-//                   <div className="flex justify-end items-center gap-1 text-xs mt-1">
-//                     <span>{formatTime(msg.createdAt)}</span>
-//                     {isSender && (
-//                       <>
-//                         {msg.status === "sent" && (
-//                           <Check size={14} className="text-gray-300" />
-//                         )}
-//                         {(msg.status === "delivered" ||
-//                           msg.status === "seen") && (
-//                           <CheckCheck
-//                             size={14}
-//                             className={`transition-colors duration-300 ${
-//                               msg.status === "seen"
-//                                 ? "text-blue-300"
-//                                 : "text-white"
-//                             }`}
-//                           />
-//                         )}
-//                       </>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-
-//         {/* typing indicator */}
-//         {typingUser && (
-//           <div className="flex justify-start gap-2">
-//             {/* … your typing indicator JSX … */}
-//           </div>
-//         )}
-
-//         <div ref={bottomRef} />
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Messages;
-
-// import React, { useCallback, useEffect, useRef, useState } from "react";
-// import { useSelector } from "react-redux";
-// import { Link } from "react-router-dom";
-// import axios from "axios";
-
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { Button } from "@/components/ui/button";
-// import { CheckCheck, Check } from "lucide-react";
-
-// import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
-
-// /* HH:MM helper */
-// const formatTime = d =>
-//   new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-// export default function Messages({ selectedUsers }) {
-//   /* ───── global data ───── */
-//   const { user } = useSelector(s => s.auth);
-//   const typingUser = useGetRTMmessage();
-
-//   /* ───── pagination refs/state ───── */
-//   const LIMIT = 6;
-
-//   /** all message chunks; kept in a ref so their
-//       update **itself** doesn't trigger re‑render loops */
-//   const pagesRef = useRef([]);  // [[…6], […6], …]
-
-//   /** dummy state – just “tick” to re‑render UI whenever pagesRef mutates */
-//   const [tick, setTick] = useState(0);
-
-//   /** “offset” for next fetch (ref, not state → no extra renders) */
-//   const skipRef = useRef(0);
-
-//   const hasMoreRef = useRef(true);   // more messages left?
-//   const loadingRef = useRef(false);  // fetch in flight?
-
-//   /* ───── DOM refs ───── */
-//   const listRef          = useRef(null); // scrollable div
-//   const bottomRef        = useRef(null); // sentinel at end
-//   const prevScrollHeight = useRef(0);    // for scroll‑stay calc
-
-//   /* ───────── fetch one page (older) ───────── */
-//   const fetchPage = useCallback(async () => {
-//     if (
-//       loadingRef.current ||
-//       !hasMoreRef.current ||
-//       !selectedUsers?.conversationId
-//     )
-//       return;
-
-//     loadingRef.current = true;
-
-//     try {
-//       const MainUri = import.meta.env.VITE_MainUri;
-//       const { data } = await axios.get(
-//         `${MainUri}/user/message/${selectedUsers.conversationId}?limit=${LIMIT}&skip=${skipRef.current}`,
-//         { withCredentials: true }
-//       );
-
-//       /* backend returns newest→oldest; flip to oldest→newest */
-//       const batch = (data.messages || []).reverse();
-
-//       /* prepend batch */
-//       pagesRef.current = [batch, ...pagesRef.current];
-//       skipRef.current += LIMIT;
-
-//       if (batch.length < LIMIT) hasMoreRef.current = false;
-
-//       /** force re‑render */
-//       setTick(t => t + 1);
-//     } catch (e) {
-//       console.error("Fetch error:", e);
-//     } finally {
-//       loadingRef.current = false;
-//     }
-//   }, [selectedUsers?.conversationId]);
-
-//   /* ───── reset on conversation change ───── */
-//   useEffect(() => {
-//     pagesRef.current = [];
-//     skipRef.current = 0;
-//     hasMoreRef.current = true;
-//     loadingRef.current = false;
-
-//     /* first load: latest 6 */
-//     fetchPage();
-//   }, [selectedUsers?._id, fetchPage]);
-
-//   /* ───── maintain scroll after older page prepend ───── */
-//   useEffect(() => {
-//     const box = listRef.current;
-//     if (!box) return;
-
-//     /* if we stored scrollHeight before a prepend, restore position */
-//     if (prevScrollHeight.current) {
-//       const diff = box.scrollHeight - prevScrollHeight.current;
-//       box.scrollTop = diff;
-//       prevScrollHeight.current = 0;          // reset flag
-//     } else {
-//       /* first load or realtime new → keep bottom‑aligned */
-//       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-//     }
-//   }, [tick]);
-
-//   /* ───── scroll handler: load older when near top ───── */
-//   const onScroll = () => {
-//     const box = listRef.current;
-//     if (!box || loadingRef.current || !hasMoreRef.current) return;
-
-//     /* user reached very top? */
-//     if (box.scrollTop <= 50) {
-//       prevScrollHeight.current = box.scrollHeight; // capture BEFORE prepend
-//       fetchPage();
-//     }
-//   };
-
-//   /* ───── flatten all pages for rendering ───── */
-//   const messages = pagesRef.current.flat();
-
-//   /* ───── JSX ───── */
-//   return (
-//     <div className="flex-1 overflow-hidden">
-//       {/* header */}
-//       <div className="flex justify-center p-4">
-//         <div className="flex flex-col items-center">
-//           <Avatar className="h-20 w-20">
-//             <AvatarImage src={selectedUsers?.profilePicture} />
-//             <AvatarFallback>U</AvatarFallback>
-//           </Avatar>
-//           <span>{selectedUsers?.username}</span>
-//           <Link to={`/profile/${selectedUsers?._id}`}>
-//             <Button variant="secondary" className="h-8 my-2">
-//               View Profile
-//             </Button>
-//           </Link>
-//         </div>
-//       </div>
-
-//       {/* messages list */}
-//       <div
-//         ref={listRef}
-//         onScroll={onScroll}
-//         className="flex flex-col gap-3 px-4 overflow-y-auto h-[calc(100vh-200px)]"
-//       >
-//         {hasMoreRef.current && (
-//           <div className="text-center text-sm text-gray-400 mb-1">
-//             {loadingRef.current ? "Loading…" : "ऊपर स्क्रोल करें"}
-//           </div>
-//         )}
-
-//         {messages.map((m, i) => {
-//           const sender = m.senderId === user._id;
-//           const firstOfReceiver =
-//             !sender && (i === 0 || messages[i - 1].senderId === user._id);
-
-//           return (
-//             <div
-//               key={m._id}
-//               className={`flex ${sender ? "justify-end" : "justify-start"} gap-2`}
-//             >
-//               {/* avatar only once per receiver block */}
-//               {!sender && firstOfReceiver && (
-//                 <Avatar className="w-8 h-8 self-start">
-//                   <Link to={`/profile/${selectedUsers?._id}`}>
-//                     <AvatarImage
-//                       src={selectedUsers?.profilePicture}
-//                       className="cursor-pointer"
-//                     />
-//                     <AvatarFallback>U</AvatarFallback>
-//                   </Link>
-//                 </Avatar>
-//               )}
-//               {!sender && !firstOfReceiver && <div className="w-8 h-8" />}
-
-//               {/* bubble */}
-//               <div className="flex flex-col items-start max-w-[80%]">
-//                 <div
-//                   className={`p-2 rounded-lg break-words ${
-//                     sender ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-//                   }`}
-//                 >
-//                   {firstOfReceiver && (
-//                     <span className="text-sm font-semibold text-gray-600 mb-1">
-//                       {selectedUsers?.username}
-//                     </span>
-//                   )}
-
-//                   {m.messages && <span>{m.messages}</span>}
-
-//                   <div className="flex justify-end items-center gap-1 text-xs mt-1">
-//                     <span>{formatTime(m.createdAt)}</span>
-//                     {sender && (
-//                       <>
-//                         {m.status === "sent" && (
-//                           <Check size={14} className="text-gray-300" />
-//                         )}
-//                         {(m.status === "delivered" || m.status === "seen") && (
-//                           <CheckCheck
-//                             size={14}
-//                             className={
-//                               m.status === "seen" ? "text-blue-300" : "text-white"
-//                             }
-//                           />
-//                         )}
-//                       </>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-
-//         {/* typing indicator */}
-//         {typingUser && (
-//           <div className="flex justify-start gap-2">
-//             <span className="text-sm italic text-gray-500">Typing…</span>
-//           </div>
-//         )}
-
-//         <div ref={bottomRef} /> {/* sentinel at end */}
-//       </div>
-//     </div>
-//   );
-// }
 
 import React, {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  Fragment,
 } from "react";
-import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import { Check, CheckCheck } from "lucide-react";
+import { BsFilePdf } from "react-icons/bs";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Check } from "lucide-react";
-import { BsFilePdf } from "react-icons/bs";
-
+import throttle from "lodash.throttle";
 import useGetRTMmessage from "../Hooks/useGetRTMmessage.jsx";
+import { setMessages } from "../ReduxStore/ChatSlice.js";
 
-/* helpers */
+/* ───────────────── helpers ───────────────── */
+const LIMIT = 6;
 const formatTime = (d) =>
   new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const dedupe = (arr) => {
+  const seen = new Set();
+  return arr.filter((m) => {
+    if (seen.has(m._id)) return false;
+    seen.add(m._id);
+    return true;
+  });
+};
 
-/* ────────────────────────── component ────────────────────────── */
-export default function Messages({ selectedUsers }) {
-  /* global data */
+/* ───────────────── component ───────────────── */
+function Messages({ selectedUsers }) {
+  const dispatch = useDispatch();
+  const { messages } = useSelector((s) => s.chat);
   const { user } = useSelector((s) => s.auth);
-  const typingUser = useGetRTMmessage();
 
-  /* pagination refs / state */
-  const LIMIT = 6;
-  const pagesRef = useRef([]); // [[…6], […6], …] – oldest → newest inside each
+  /* refs */
+  const containerRef = useRef(null);
   const skipRef = useRef(0);
-  const hasMoreRef = useRef(true);
-  const loadingRef = useRef(false);
+  const fetchingRef = useRef(false);
 
-  /* UI state */
-  const [tick, setTick] = useState(0); // dummy to trigger re‑render
+  /* local state */
   const [openImage, setOpenImage] = useState(null);
   const [openVideo, setOpenVideo] = useState(null);
+  const [loadingTop, setLoadingTop] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // “No more messages” flag
+  const typingUser = useGetRTMmessage();
 
-  /* DOM refs */
-  const listRef = useRef(null);
-  const bottomRef = useRef(null);
-  const prevScrollHeight = useRef(0);
+  /* pick only msgs for this chat & sort oldest→newest */
+  const chatMsgs = useMemo(() => {
+    return messages
+      .filter(
+        (m) =>
+          (m.senderId === user._id && m.receiverId === selectedUsers._id) ||
+          (m.senderId === selectedUsers._id && m.receiverId === user._id)
+      )
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }, [messages, selectedUsers, user]);
 
-  /* ───── fetch one page (older) ───── */
-  const fetchPage = useCallback(async () => {
-    if (
-      loadingRef.current ||
-      !hasMoreRef.current ||
-      !selectedUsers?.conversationId
-    )
-      return;
+  /* reset counters whenever user changes chat */
+  useEffect(() => {
+    skipRef.current = chatMsgs.length;
+    setHasMore(true);
+  }, [selectedUsers, chatMsgs.length]);
 
-    loadingRef.current = true;
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [chatMsgs]);
+  /* fetch previous page */
+  const loadMoreTop = useCallback(async () => {
+    if (fetchingRef.current || !hasMore) return;
+    fetchingRef.current = true;
+    setLoadingTop(true);
+
+    const container = containerRef.current;
+    const oldHeight = container.scrollHeight;
 
     try {
       const MainUri = import.meta.env.VITE_MainUri;
@@ -828,277 +396,294 @@ export default function Messages({ selectedUsers }) {
         { withCredentials: true }
       );
 
-      const batch = (data.messages || []).reverse(); // oldest→newest
-      pagesRef.current = [batch, ...pagesRef.current]; // prepend
-      skipRef.current += LIMIT;
-      if (batch.length < LIMIT) hasMoreRef.current = false;
-      setTick((t) => t + 1); // re‑render
+      const newMsgs = (data.messages || []).reverse(); // oldest→newest
+      if (newMsgs.length === 0) {
+        setHasMore(false); // reached beginning
+      } else {
+        skipRef.current += newMsgs.length;
+        dispatch(setMessages(dedupe([...newMsgs, ...messages])));
+
+        await new Promise((r) => requestAnimationFrame(r));
+        container.scrollTop = container.scrollHeight - oldHeight;
+      }
     } catch (err) {
       console.error("fetchPage error:", err);
     } finally {
-      loadingRef.current = false;
+      fetchingRef.current = false;
+      setLoadingTop(false);
     }
-  }, [selectedUsers?.conversationId]);
+  }, [dispatch, messages, selectedUsers, hasMore]);
 
-  /* reset when conversation changes */
+  /* initial page if cache empty */
   useEffect(() => {
-    pagesRef.current = [];
-    skipRef.current = 0;
-    hasMoreRef.current = true;
-    loadingRef.current = false;
-    fetchPage(); // load latest‑6
-  }, [selectedUsers?._id, fetchPage]);
+    if (chatMsgs.length === 0) loadMoreTop();
+  }, [selectedUsers]);
 
-  /* keep bottom on first load, keep position after prepend */
+  /* scroll listener */
   useEffect(() => {
-    const box = listRef.current;
-    if (!box) return;
+    const c = containerRef.current;
+    if (!c) return;
+    const throttledLoadMoreTop = throttle(() => {
+      if (c.scrollTop < 5) {
+        loadMoreTop();
+      }
+    },500); // adjust time in ms as needed
 
-    if (prevScrollHeight.current) {
-      const diff = box.scrollHeight - prevScrollHeight.current;
-      box.scrollTop = diff;
-      prevScrollHeight.current = 0;
-    } else {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [tick]);
-
-  /* scroll handler: load older on top */
-  const onScroll = () => {
-    const box = listRef.current;
-    if (!box || loadingRef.current || !hasMoreRef.current) return;
-    if (box.scrollTop <= 50) {
-      prevScrollHeight.current = box.scrollHeight;
-      fetchPage();
-    }
-  };
-
-  const messages = pagesRef.current.flat(); // single chronological array
-
-  /* ───────── helpers for file rendering ───────── */
-  const renderAttachment = (msg) => {
-    if (!msg.file) return null;
-
-    const { url = "", filename = "file", mimetype = "", size = 0 } = msg.file;
-    const ext =
-      filename.split(".").pop()?.toLowerCase() ||
-      mimetype.split("/").pop()?.toLowerCase();
-
-    const fmtSize = (b) => {
-      if (!b) return "0 KB";
-      const k = 1024,
-        sizes = ["Bytes", "KB", "MB", "GB"],
-        i = Math.floor(Math.log(b) / Math.log(k));
-      return `${(b / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+    c.addEventListener("scroll", throttledLoadMoreTop);
+    return () => {
+      c.removeEventListener("scroll", throttledLoadMoreTop);
+      throttledLoadMoreTop.cancel(); // cleanup
     };
+  }, [loadMoreTop]);
 
-    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
-      return (
-        <Fragment>
-          <img
-            src={url}
-            onClick={() => setOpenImage(url)}
-            alt="attachment"
-            className="w-full h-auto max-h-72 rounded-lg object-cover cursor-pointer"
-          />
-          {openImage === url && (
-            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
-              <img
-                src={url}
-                alt="full"
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-              <button
-                onClick={() => setOpenImage(null)}
-                className="absolute top-4 right-4 text-white text-4xl font-bold"
-              >
-                &times;
-              </button>
-            </div>
-          )}
-        </Fragment>
-      );
+  /* scroll to bottom on first open */
+  useEffect(() => {
+    if (chatMsgs.length <= LIMIT) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [selectedUsers]);
 
-    if (ext === "pdf")
-      return (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 bg-white p-2 rounded-md shadow-md cursor-pointer text-xs mt-1"
-        >
-          <BsFilePdf size={32} className="text-red-600" />
-          <div className="flex flex-col">
-            <span className="font-medium text-sm truncate max-w-[200px]">
-              {filename}
-            </span>
-            <span className="text-xs text-gray-500">
-              PDF · {fmtSize(size)}
-            </span>
-            View PDF
-          </div>
-        </a>
-      );
-
-    if (["mp4", "webm", "ogg"].includes(ext))
-      return (
-        <Fragment>
-          <video
-            controls
-            src={url}
-            className="w-full max-h-72 rounded-lg pointer-events-auto"
-            onClick={(e) => {
-              /* prevent accidental modal */
-              e.stopPropagation();
-            }}
-          />
-          {openVideo === url && (
-            <div
-              className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
-              onClick={() => setOpenVideo(null)}
-            >
-              <video
-                controls
-                autoPlay
-                src={url}
-                className="max-w-full max-h-full rounded-lg"
-              />
-            </div>
-          )}
-        </Fragment>
-      );
-
-    /* fallback */
-    return (
-      <div className="flex flex-col items-start">
-        <a href={url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-          {filename}
-        </a>
-        <span className="text-xs text-gray-500 mt-1">{fmtSize(size)}</span>
-      </div>
-    );
-  };
-
-  /* ───────── JSX ───────── */
+  /* ───────────────── render ───────────────── */
   return (
-    <div className="flex-1 overflow-hidden">
-      {/* header */}
-      <div className="flex justify-center p-4">
-        <div className="flex flex-col items-center">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={selectedUsers?.profilePicture} />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <span>{selectedUsers?.username}</span>
-          <Link to={`/profile/${selectedUsers?._id}`}>
-            <Button variant="secondary" className="h-8 my-2">
-              View Profile
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div ref={containerRef} className="overflow-y-auto flex-1 p-4 pb-16">
+      <Header user={selectedUsers} />
 
-      {/* message list */}
-      <div
-        ref={listRef}
-        onScroll={onScroll}
-        className="flex flex-col gap-3 px-4 overflow-y-auto h-[calc(100vh-200px)]"
-      >
-        {hasMoreRef.current && (
-          <div className="text-center text-sm text-gray-400 mb-1">
-            {loadingRef.current ? "Loading…" : "Scroll up for older messages"}
+      <div className="flex flex-col gap-3 mt-4">
+        {/* spinner / no-more messages banner */}
+        {loadingTop && (
+          <div className="flex justify-center py-1">
+            <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+          </div>
+        )}
+        {!loadingTop && !hasMore && (
+          <div className="text-center text-xs text-gray-500 py-1">
+            No more messages
           </div>
         )}
 
-        {messages.map((m, i) => {
-          const sender = m.senderId === user._id;
-          const firstOfReceiver =
-            !sender && (i === 0 || messages[i - 1].senderId === user._id);
+        {/* actual messages */}
+        {chatMsgs.map((m, i) => (
+          <MessageBubble
+            key={m._id}
+            msg={m}
+            idx={i}
+            list={chatMsgs}
+            selfId={user._id}
+            other={selectedUsers}
+            openImage={openImage}
+            setOpenImage={setOpenImage}
+            openVideo={openVideo}
+            setOpenVideo={setOpenVideo}
+          />
+        ))}
 
-          return (
-            <div
-              key={m._id}
-              className={`flex ${sender ? "justify-end" : "justify-start"} gap-2`}
-            >
-              {/* receiver avatar once per block */}
-              {!sender && firstOfReceiver && (
-                <Avatar className="w-8 h-8 self-start">
-                  <Link to={`/profile/${selectedUsers?._id}`}>
-                    <AvatarImage
-                      src={selectedUsers?.profilePicture}
-                      className="cursor-pointer"
-                    />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Link>
-                </Avatar>
-              )}
-              {!sender && !firstOfReceiver && <div className="w-8 h-8" />}
-
-              <div className="flex flex-col items-start max-w-[80%]">
-                <div
-                  className={`p-2 rounded-lg break-words ${
-                    sender ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-                  }`}
-                >
-                  {firstOfReceiver && (
-                    <span className="text-sm font-semibold text-gray-600 mb-1">
-                      {selectedUsers?.username}
-                    </span>
-                  )}
-
-                  {/* attachment / text */}
-                  {renderAttachment(m)}
-                  {m.messages && <span>{m.messages}</span>}
-
-                  {/* meta row */}
-                  <div className="flex justify-end items-center gap-1 text-xs mt-1">
-                    <span>{formatTime(m.createdAt)}</span>
-                    {sender && (
-                      <>
-                        {m.status === "sent" && (
-                          <Check size={14} className="text-gray-300" />
-                        )}
-                        {(m.status === "delivered" || m.status === "seen") && (
-                          <CheckCheck
-                            size={14}
-                            className={
-                              m.status === "seen" ? "text-blue-300" : "text-white"
-                            }
-                          />
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* typing indicator */}
-        {typingUser && (
-          <div className="flex justify-start gap-2">
-            <Avatar className="w-8 h-8 self-start">
-              <AvatarImage src={selectedUsers?.profilePicture} />
-              <AvatarFallback>{selectedUsers?.username?.[0]}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-start max-w-[80%]">
-              <div className="bg-gray-200 text-black p-2 rounded-lg">
-                <span className="text-sm font-semibold text-gray-600">
-                  {selectedUsers?.username}
-                </span>
-                <span className="flex gap-1 mt-1">
-                  <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce" />
-                  <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-150" />
-                  <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-300" />
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div ref={bottomRef} />
+        {typingUser && <TypingBubble user={selectedUsers} />}
       </div>
     </div>
   );
 }
+
+/* ───────────────── sub components ───────────────── */
+const Header = ({ user }) => (
+  <div className="flex justify-center">
+    <div className="flex flex-col items-center">
+      <Avatar className="h-20 w-20">
+        <AvatarImage src={user.profilePicture} />
+        <AvatarFallback>U</AvatarFallback>
+      </Avatar>
+      <span>{user.username}</span>
+      <Link to={`/profile/${user._id}`}>
+        <Button className="h-8 my-2" variant="secondary">
+          View Profile
+        </Button>
+      </Link>
+    </div>
+  </div>
+);
+
+const FullScreen = ({ children, onClose }) => (
+  <div
+    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+    onClick={onClose}
+  >
+    {children}
+  </div>
+);
+
+const MessageBubble = ({
+  msg,
+  idx,
+  list,
+  selfId,
+  other,
+  openImage,
+  setOpenImage,
+  openVideo,
+  setOpenVideo,
+}) => {
+  const isSender = msg.senderId === selfId;
+  const firstOfBlock =
+    !isSender && (idx === 0 || list[idx - 1].senderId === selfId);
+
+  /* attachment renderer */
+  const renderAttachment = () => {
+    if (!msg.file) return null;
+    const { url = "", filename = "file", mimetype = "", size = 0 } = msg.file;
+    const ext = (
+      filename.split(".").pop() ||
+      mimetype.split("/").pop() ||
+      ""
+    ).toLowerCase();
+    const kb = size ? `${(size / 1024).toFixed(1)} KB` : "";
+
+    const PDF = () => (
+      <a href={url} target="_blank" rel="noreferrer" className="text-xs mt-1">
+        <div className="flex items-center gap-2 bg-white p-2 rounded-md shadow">
+          <BsFilePdf size={28} className="text-red-600" />
+          <div className="flex flex-col">
+            <span className="font-medium text-sm truncate max-w-[180px]">
+              {filename}
+            </span>
+            <span className="text-xs text-gray-500">PDF · {kb}</span>
+          </div>
+        </div>
+      </a>
+    );
+
+    const Image = () => (
+      <>
+        <img
+          src={url}
+          className="w-full max-h-72 rounded-lg cursor-pointer object-cover"
+          onClick={() => setOpenImage(url)}
+        />
+        {openImage === url && (
+          <FullScreen onClose={() => setOpenImage(null)}>
+            <img src={url} className="max-w-full max-h-full" />
+          </FullScreen>
+        )}
+      </>
+    );
+
+    const Video = () => (
+      <>
+        <video
+          controls
+          src={url}
+          className="w-full max-h-72 rounded-lg"
+          onClick={() => setOpenVideo(url)}
+        />
+        {openVideo === url && (
+          <FullScreen onClose={() => setOpenVideo(null)}>
+            <video
+              controls
+              autoPlay
+              src={url}
+              className="max-w-full max-h-full"
+            />
+          </FullScreen>
+        )}
+      </>
+    );
+
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return <Image />;
+    if (ext === "pdf") return <PDF />;
+    if (["mp4", "webm", "ogg"].includes(ext)) return <Video />;
+
+    return (
+      <div className="flex flex-col">
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 underline"
+        >
+          {filename}
+        </a>
+        <span className="text-xs text-gray-500">{kb}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`flex ${isSender ? "justify-end" : "justify-start"} gap-2`}>
+      {!isSender &&
+        (firstOfBlock ? (
+          <Avatar className="w-8 h-8 self-start">
+            <Link to={`/profile/${other._id}`}>
+              <AvatarImage
+                src={other.profilePicture}
+                className="cursor-pointer"
+              />
+              <AvatarFallback>U</AvatarFallback>
+            </Link>
+          </Avatar>
+        ) : (
+          <div className="w-8 h-8" />
+        ))}
+
+      <div className="flex flex-col items-start max-w-[80%]">
+        <div
+          className={`p-2 rounded-lg break-words ${
+            isSender ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+          }`}
+        >
+          <div className="flex flex-col gap-2">
+            {firstOfBlock && !isSender && (
+              <span className="text-sm font-semibold text-gray-600 -mt-0.5">
+                {other.username}
+              </span>
+            )}
+
+            {renderAttachment()}
+            {msg.messages && <span>{msg.messages}</span>}
+
+            <div className="flex justify-end gap-1 text-xs mt-1 items-center">
+              <span>{formatTime(msg.createdAt)}</span>
+              {isSender &&
+                (msg.status === "sent" ? (
+                  <Check size={14} className="text-gray-300" />
+                ) : (
+                  <CheckCheck
+                    size={14}
+                    className={
+                      msg.status === "seen" ? "text-green-400" : "text-gray-300"
+                    }
+                  />
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* simple typing indicator */
+const TypingBubble = ({ user }) => (
+  <div className="flex justify-start gap-2 pl-4">
+    <Avatar className="w-8 h-8 self-start">
+      <AvatarImage src={user?.profilePicture} />
+      <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
+    </Avatar>
+
+    <div className="flex flex-col items-start max-w-[80%]">
+      <div className="bg-gray-200 text-black p-2 rounded-lg">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-semibold text-gray-600 mb-1">
+            {user?.username}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="flex gap-1 ml-1">
+              <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></span>
+              <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-150"></span>
+              <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-300"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+export default Messages;

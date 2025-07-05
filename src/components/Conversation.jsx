@@ -17,6 +17,7 @@ import { FiPaperclip } from "react-icons/fi";
 import FileUpload from "./FileUpload.jsx";
 import axios from "axios";
 function Conversation() {
+  const hasFetched = useRef(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, selectedUsers } = useSelector((store) => store.auth);
@@ -74,20 +75,22 @@ function Conversation() {
         dispatch(setchatHistory(mutuals));
         dispatch(setMessages([]));
         const mutualIds = mutuals.map((m) => m._id);
-        const MainUri = import.meta.env.VITE_MainUri;
-
-        const res = await axios.post(
-          `${MainUri}/user/message/conversations/bulk-start`,
-          {
-            userIds: mutualIds,
-          },
-          {
-            withCredentials: true,
+        try {
+          const MainUri = import.meta.env.VITE_MainUri;
+          const res = await axios.post(
+            `${MainUri}/user/message/conversations/bulk-start`,
+            {
+              userIds: mutualIds,
+            },
+            {
+              withCredentials: true,
+            }
+          );
+          if (res.data.success) {
+            dispatch(setConversationMap(res.data.conversationMap)); // Store in Redux or Context
           }
-        );
-
-        if (res.data.success) {
-          dispatch(setConversationMap(res.data.conversationMap)); // Store in Redux or Context
+        } catch (err) {
+          console.log(err);
         }
       }
     };
@@ -150,7 +153,7 @@ function Conversation() {
               key={mutualuser?._id}
               className="flex gap-3 items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg"
               onClick={async () => {
-                if (selectedUsers?._id!==mutualuser?._id) {
+                if (selectedUsers?._id !== mutualuser?._id) {
                   const conversationId = await conversationMap[mutualuser?._id];
                   dispatch(setselectedUsers({ ...mutualuser, conversationId }));
                 }
