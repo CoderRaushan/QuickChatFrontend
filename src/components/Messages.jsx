@@ -343,7 +343,7 @@ const dedupe = (arr) => {
 /* ───────────────── component ───────────────── */
 function Messages({ selectedUsers }) {
   const dispatch = useDispatch();
-  const { messages } = useSelector((s) => s.chat);
+  const { messages, chatHistory, conversationMap } = useSelector((s) => s.chat);
   const { user } = useSelector((s) => s.auth);
 
   /* refs */
@@ -374,6 +374,36 @@ function Messages({ selectedUsers }) {
     skipRef.current = chatMsgs.length;
     setHasMore(true);
   }, [selectedUsers, chatMsgs.length]);
+
+  useEffect(() => {
+    if (!chatHistory || !messages) return;
+
+    chatHistory.forEach((mutualuser) => {
+      const conversationId = conversationMap[mutualuser._id];
+      const conversationMessages = messages?.filter(
+        (msg) => msg.conversationId === conversationId
+      );
+
+      if (conversationMessages?.length > 0) {
+        const latest = conversationMessages.reduce((a, b) =>
+          new Date(b.createdAt) > new Date(a.createdAt) ? b : a
+        );
+
+        const words = latest.messages.split(" ");
+        const truncated = {
+          ...latest,
+          messages:
+            words.slice(0, 5).join(" ") + (words.length > 5 ? " ..." : ""),
+        };
+
+        // 🔁 Update localStorage
+        localStorage.setItem(
+          `conversationMsg_${mutualuser._id}`,
+          JSON.stringify(truncated)
+        );
+      }
+    });
+  }, [messages, chatHistory, conversationMap]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -427,7 +457,7 @@ function Messages({ selectedUsers }) {
       if (c.scrollTop < 5) {
         loadMoreTop();
       }
-    },500); // adjust time in ms as needed
+    }, 500); // adjust time in ms as needed
 
     c.addEventListener("scroll", throttledLoadMoreTop);
     return () => {
@@ -621,7 +651,6 @@ const MessageBubble = ({
         ) : (
           <div className="w-8 h-8" />
         ))}
-
       <div className="flex flex-col items-start max-w-[80%]">
         <div
           className={`p-2 rounded-lg break-words ${

@@ -146,38 +146,117 @@ function Conversation() {
       >
         <h1 className="font-bold text-lg mb-4">{user?.username}</h1>
         <h2 className="text-md font-semibold mb-2">Messages</h2>
-        {chatHistory?.map((mutualuser) => {
-          const isOnline = onlineUsers?.includes(mutualuser?._id);
-          return (
-            <div
-              key={mutualuser?._id}
-              className="flex gap-3 items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg"
-              onClick={async () => {
-                if (selectedUsers?._id !== mutualuser?._id) {
-                  const conversationId = await conversationMap[mutualuser?._id];
-                  dispatch(setselectedUsers({ ...mutualuser, conversationId }));
-                }
-              }}
-            >
-              <Avatar>
-                <AvatarImage src={mutualuser?.profilePicture} />
-                <AvatarFallback>{mutualuser?.username[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="font-medium text-sm">
-                  {mutualuser?.username}
-                </span>
-                <span
-                  className={`text-xs font-bold ${
-                    isOnline ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {isOnline ? "Online" : "Offline"}
-                </span>
+
+        {chatHistory
+          ?.slice()
+          .sort((a, b) => {
+            const idA = conversationMap[a?._id];
+            const idB = conversationMap[b?._id];
+
+            const msgA = messages?.filter((msg) => msg.conversationId === idA);
+            const msgB = messages?.filter((msg) => msg.conversationId === idB);
+
+            const latestA = msgA?.length
+              ? new Date(
+                  msgA.reduce((latest, curr) =>
+                    new Date(curr.createdAt) > new Date(latest.createdAt)
+                      ? curr
+                      : latest
+                  ).createdAt
+                )
+              : new Date(0); // if no messages
+
+            const latestB = msgB?.length
+              ? new Date(
+                  msgB.reduce((latest, curr) =>
+                    new Date(curr.createdAt) > new Date(latest.createdAt)
+                      ? curr
+                      : latest
+                  ).createdAt
+                )
+              : new Date(0);
+
+            return latestB - latestA; // sort in descending order
+          })
+          .map((mutualuser) => {
+            let latestMessage;
+            const conversationId = conversationMap[mutualuser?._id];
+            const conversationMessages = messages?.filter(
+              (msg) => msg?.conversationId === conversationId
+            );
+
+            if (conversationMessages && conversationMessages.length > 0) {
+              latestMessage = conversationMessages.reduce((latest, current) =>
+                new Date(current.createdAt) > new Date(latest.createdAt)
+                  ? current
+                  : latest
+              );
+            }
+
+            let truncatedMessage;
+            if (latestMessage?.messages) {
+              const words = latestMessage.messages.split(" ");
+              truncatedMessage = {
+                ...latestMessage,
+                messages:
+                  words.slice(0, 5).join(" ") +
+                  (words.length > 5 ? " ..." : ""),
+              };
+              localStorage.setItem(
+                `conversationMsg-${mutualuser?._id}`,
+                JSON.stringify(truncatedMessage)
+              );
+            }
+
+            const storedMsg = JSON.parse(
+              localStorage.getItem(`conversationMsg-${mutualuser?._id}`)
+            );
+            const isOnline = onlineUsers?.includes(mutualuser?._id);
+
+            return (
+              <div
+                key={mutualuser?._id}
+                className="flex gap-3 items-center p-3 cursor-pointer hover:bg-gray-100 rounded-lg"
+                onClick={async () => {
+                  if (selectedUsers?._id !== mutualuser?._id) {
+                    const conversationId = await conversationMap[
+                      mutualuser?._id
+                    ];
+                    dispatch(
+                      setselectedUsers({ ...mutualuser, conversationId })
+                    );
+                  }
+                }}
+              >
+                <div className="relative w-fit">
+                  <Avatar>
+                    <AvatarImage src={mutualuser?.profilePicture} />
+                    <AvatarFallback>{mutualuser?.username[0]}</AvatarFallback>
+                  </Avatar>
+
+                  {/* Online/Offline Dot */}
+                  <span
+                    className={`absolute top-0 left-[-4px] w-3 h-3 rounded-full border-2 border-white ${
+                      isOnline ? "bg-green-500" : "bg-red-400"
+                    }`}
+                  ></span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">
+                    {mutualuser?.username}
+                  </span>
+                  <span
+                    className={`text-xs font-bold ${
+                      isOnline ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {storedMsg?.senderId === user?._id ? "You: " : ""}
+                    {storedMsg?.messages || (isOnline ? "Online" : "Offline")}
+                  </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </section>
       {/* Chat Section */}
       {selectedUsers ? (
