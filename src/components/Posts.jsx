@@ -179,7 +179,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Post from "./Post.jsx";
 import { setPosts } from "../ReduxStore/PostSlice.js";
 import axios from "axios";
-import useGetAllPosts from "../hooks/useGetAllPosts.jsx";
+import useGetAllPosts from "../hooks/useGetAllPosts";
 import { throttle } from "../Utils/Utils.js";
 import { LoaderCircle } from "lucide-react";
 
