@@ -20,7 +20,7 @@
 // import Post from "./Post.jsx";
 // import { setPosts } from "../ReduxStore/PostSlice.js";
 // import axios from "axios";
-// import useGetAllPosts from "../hooks/useGetAllPosts";
+// import useGetAllPosts from "../hooks/useGetAllPosts.jsx";
 // import { throttle } from "../Utils/Utils.js";
 
 // function Posts() {
