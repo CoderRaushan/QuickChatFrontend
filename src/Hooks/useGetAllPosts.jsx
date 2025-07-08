@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { setPosts } from "../ReduxStore/PostSlice.js";
 
-function useGetAllPosts() {
+function usegetallposts() {
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchInitialPosts = async () => {
@@ -27,7 +27,7 @@ function useGetAllPosts() {
     fetchInitialPosts();
   }, [dispatch]);
 }
-export default useGetAllPosts;
+export default usegetallposts;
 // import axios from 'axios'
 // import React, { useEffect } from 'react'
 // import { useDispatch } from 'react-redux';

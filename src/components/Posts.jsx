@@ -1,3 +1,100 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import Post from "./Post.jsx";
+import { setPosts } from "../ReduxStore/PostSlice.js";
+import axios from "axios";
+import  usegetallposts from "../hooks/usegetallposts.jsx";
+import { throttle } from "../Utils/Utils.js";
+import { LoaderCircle } from "lucide-react";
+
+function Posts() {
+  const dispatch = useDispatch();
+  const postState = useSelector((store) => store.post).post;
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const BATCH = 5;
+  const MainUri = import.meta.env.VITE_MainUri;
+
+  usegetallposts(); // Load initial batch
+
+  const fetchNext = async () => {
+    if (!hasMore || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const res = await axios.get(
+        `${MainUri}/user/post/all?skip=${page * BATCH}&limit=${BATCH}`,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        if (res.data.posts.length === 0) {
+          setHasMore(false);
+        } else {
+          dispatch(setPosts([...postState, ...res.data.posts]));
+          setPage((prev) => prev + 1);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Throttled scroll handler
+  const handleScroll = useCallback(
+    throttle(() => {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      if (scrollTop + clientHeight >= scrollHeight - 50) {
+        fetchNext();
+      }
+    }, 300),
+    [page, hasMore, isLoading, postState]
+  );
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // 👉 Force fetch when content height is less than viewport height
+  useEffect(() => {
+    const checkAndFetch = () => {
+      if (document.documentElement.scrollHeight <= window.innerHeight + 100 && hasMore && !isLoading) {
+        fetchNext();
+      }
+    };
+    checkAndFetch(); // On mount
+  }, [postState]); // Also run after each post update
+
+  return (
+    <div>
+      {postState.map((post) => (
+        <Post key={post._id} post={post} />
+      ))}
+
+      {isLoading && (
+        <div className="flex justify-center my-4">
+          <LoaderCircle className="animate-spin text-gray-700" size={32} />
+        </div>
+      )}
+
+      {!hasMore && !isLoading && (
+        <p style={{ textAlign: "center", margin: "1rem 0" }}>
+          🎉 All posts loaded
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default Posts;
+
+
 // import React from "react";
 // import Post from "./Post.jsx";
 // import { useSelector } from "react-redux";
@@ -174,98 +271,3 @@
 // }
 
 // export default Posts;
-import React, { useEffect, useState, useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import Post from "./Post.jsx";
-import { setPosts } from "../ReduxStore/PostSlice.js";
-import axios from "axios";
-import useGetAllPosts from "../hooks/useGetAllPosts";
-import { throttle } from "../Utils/Utils.js";
-import { LoaderCircle } from "lucide-react";
-
-function Posts() {
-  const dispatch = useDispatch();
-  const postState = useSelector((store) => store.post).post;
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const BATCH = 5;
-  const MainUri = import.meta.env.VITE_MainUri;
-
-  useGetAllPosts(); // Load initial batch
-
-  const fetchNext = async () => {
-    if (!hasMore || isLoading) return;
-
-    setIsLoading(true);
-    try {
-      const res = await axios.get(
-        `${MainUri}/user/post/all?skip=${page * BATCH}&limit=${BATCH}`,
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        if (res.data.posts.length === 0) {
-          setHasMore(false);
-        } else {
-          dispatch(setPosts([...postState, ...res.data.posts]));
-          setPage((prev) => prev + 1);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Throttled scroll handler
-  const handleScroll = useCallback(
-    throttle(() => {
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      if (scrollTop + clientHeight >= scrollHeight - 50) {
-        fetchNext();
-      }
-    }, 300),
-    [page, hasMore, isLoading, postState]
-  );
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
-
-  // 👉 Force fetch when content height is less than viewport height
-  useEffect(() => {
-    const checkAndFetch = () => {
-      if (document.documentElement.scrollHeight <= window.innerHeight + 100 && hasMore && !isLoading) {
-        fetchNext();
-      }
-    };
-    checkAndFetch(); // On mount
-  }, [postState]); // Also run after each post update
-
-  return (
-    <div>
-      {postState.map((post) => (
-        <Post key={post._id} post={post} />
-      ))}
-
-      {isLoading && (
-        <div className="flex justify-center my-4">
-          <LoaderCircle className="animate-spin text-gray-700" size={32} />
-        </div>
-      )}
-
-      {!hasMore && !isLoading && (
-        <p style={{ textAlign: "center", margin: "1rem 0" }}>
-          🎉 All posts loaded
-        </p>
-      )}
-    </div>
-  );
-}
-
-export default Posts;
