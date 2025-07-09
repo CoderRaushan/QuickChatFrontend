@@ -37,8 +37,10 @@ function Profile() {
   const params = useParams();
   const userId = params.id;
   useGetUserProfile(userId);
-
-  const { UserProfile, user } = useSelector((state) => state.auth);
+  const { UserProfile, user, selectedUsers } = useSelector(
+    (state) => state.auth
+  );
+  const { conversationMap } = useSelector((store) => store.chat);
   const [IsFollowing, setIsFollowing] = useState(
     user?.following?.some((item) => item?._id === UserProfile?._id)
   );
@@ -150,10 +152,32 @@ function Profile() {
                       <Button
                         variant="secondary"
                         className="h-8 bg-gray-200 hover:bg-gray-300"
+                        onClick={async () => {
+                          if (selectedUsers?._id !== UserProfile?._id) {
+                            const conversationId = await conversationMap[
+                              UserProfile?._id
+                            ];
+                            dispatch(
+                              setselectedUsers({
+                                ...UserProfile,
+                                conversationId,
+                              })
+                            );
+                          }
+                        }}
                       >
                         Message
                       </Button>
                     </Link>
+
+                    {/* <Link to={"/conversation"}>
+                      <Button
+                        variant="secondary"
+                        className="h-8 bg-gray-200 hover:bg-gray-300"
+                      >
+                        Message
+                      </Button>
+                    </Link> */}
                   </>
                 ) : (
                   <Button

@@ -448,6 +448,9 @@ function Post({ post }) {
       <CommentDialog
         CommentOpen={CommentOpen}
         setCommentOpen={setCommentOpen}
+        like={like}
+        likeCount={likeCount}
+        HandleLikeAndDislikePost={HandleLikeAndDislikePost}
       />
       <div className="flex items-center justify-between mt-2 border-t pt-2">
         <input

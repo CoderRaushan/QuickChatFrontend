@@ -14,7 +14,6 @@ function Comment({ comment }) {
           <span className="font-normal pl-1">{comment?.text}</span>
         </h1>
       </div>
-      
     </div>
   );
 }

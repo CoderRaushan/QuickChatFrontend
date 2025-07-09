@@ -970,6 +970,7 @@
 // export default LeftSideBar;// this is final code
 
 // ----------------------- LeftSideBar.jsx -----------------------
+
 import {
   Home,
   Search,
@@ -977,6 +978,7 @@ import {
   MessageCircle,
   PlusSquare,
   LogOut as LogOutIcon,
+  LogInIcon,
 } from "lucide-react";
 import { FaHeart, FaRegHeart, FaInstagram } from "react-icons/fa";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -987,7 +989,7 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { setAuthUser } from "../ReduxStore/authSlice";
+import { setAuthUser, setSearchResults } from "../ReduxStore/authSlice";
 import { setisLogin } from "../ReduxStore/LoginSlice";
 import { markNotificationsAsSeen } from "../ReduxStore/RealTimeNotificationSlice";
 import { setSelectedPost } from "../ReduxStore/PostSlice";
@@ -1001,20 +1003,21 @@ function LeftSideBar() {
   const [openSearch, setOpenSearch] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
+  const [loadingTop, setloadingTop] = useState(false);
 
   const [searchText, setSearchText] = useState("");
-  const [results, setResults] = useState([]);
+  // const [SearchResults, setSearchResults] = useState([]);
   const [typingTimer, setTypingTimer] = useState(null);
 
   /* ───────── redux state ───────── */
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, UserProfile } = useSelector((s) => s.auth);
+  const { user, UserProfile, SearchResults } = useSelector((s) => s.auth);
   const { isLogin } = useSelector((s) => s.isLogin);
   const { likeNotification, unseenCount, followNotification } = useSelector(
     (s) => s.Notification
   );
-
+  console.log(SearchResults);
   /* ───────── helpers ───────── */
   const closePanels = () => {
     setOpenNotif(false);
@@ -1110,25 +1113,29 @@ function LeftSideBar() {
         label: "Profile",
       },
       {
-        icon: <LogOutIcon className="w-6 h-6" />,
+        icon: isLogin ? (
+          <LogOutIcon className="w-6 h-6" />
+        ) : (
+          <LogInIcon className="w-6 h-6" />
+        ),
         label: isLogin ? "Logout" : "Login",
       },
     ],
     [collapsed, isLogin, user?.profilePicture]
   );
-
   /* ───────── search – debounce + API fetch ───────── */
   useEffect(() => {
     if (typingTimer) clearTimeout(typingTimer);
 
     const handler = setTimeout(async () => {
       if (!searchText.trim()) {
-        setResults([]);
         return;
       }
       try {
+        setloadingTop(true);
+        const MainUri = import.meta.env.VITE_MainUri;
         const res = await axios.post(
-          "http://localhost:7464/user/search",
+          `${MainUri}/user/search`,
           {
             username: searchText,
           },
@@ -1137,13 +1144,14 @@ function LeftSideBar() {
           }
         );
         if (res.data.success) {
-          console.log(res.data);
-          setResults(res.data.searchedUser);
+          setloadingTop(false);
+          dispatch(setSearchResults(res?.data?.searchedUser));
         }
       } catch {
-        setResults([]);
+        dispatch(setSearchResults([]));
+        setloadingTop(false);
       }
-    }, 1000); // 300 ms debounce
+    }, 2000);
 
     setTypingTimer(handler);
     return () => clearTimeout(handler);
@@ -1168,7 +1176,7 @@ function LeftSideBar() {
                 key={label}
                 onClick={() => handleClick(label)}
                 title={collapsed ? label : undefined}
-                className="flex items-center gap-3 px-3 py-2 cursor-pointer
+                className="flex items-center gap-3 px-3 py-4 cursor-pointer
                   hover:bg-gray-100 rounded-md relative"
               >
                 {icon}
@@ -1281,54 +1289,116 @@ function LeftSideBar() {
                 </button>
               )}
             </div>
+            {loadingTop && (
+              <div className="flex justify-center py-1">
+                <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+              </div>
+            )}
 
             {/* Results (avatar + name horizontal) */}
-            {searchText && (
-              <>
-                <p className="text-gray-500 mb-1">Results</p>
-                {results?.length === 0 ? (
-                  <p className="text-sm text-gray-400 mb-2">No match found</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {results?.map((u) => (
-                      <li
-                        key={u._id}
-                        className="flex items-center gap-3 cursor-pointer
-                          hover:bg-gray-100 p-2 rounded-md"
+            {/* ---------------- Search Panel ---------------- */}
+            <AnimatePresence>
+              {openSearch && (
+                <motion.div
+                  key="search"
+                  initial={{ x: "-100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "-100%" }}
+                  transition={{ type: "tween", duration: 0.35 }}
+                  className="fixed top-0 left-[70px] h-screen w-[350px] bg-white border-r shadow-md p-4 z-20 overflow-y-auto"
+                >
+                  <h2 className="font-bold text-xl mb-4">Search</h2>
+
+                  {/* Input + clear button */}
+                  <div className="relative mb-4">
+                    <input
+                      type="text"
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      placeholder="Search users..."
+                      className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
+                    />
+                    {searchText && (
+                      <button
+                        onClick={() => setSearchText("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black text-lg"
                       >
-                        <div className="flex flex-col justify-center items-center">
-                          <Link to={`/profile/${u._id}`}>
-                            <div className="flex items-center gap-1 justify-center">
-                              <Avatar>
-                                <AvatarImage src={u?.profilePicture} />
-                                <AvatarFallback>{u?.name}</AvatarFallback>
-                              </Avatar>
-                              <div className="flex flex-col itms-center justify-center">
-                                <span className="font-semibold leading-none">
-                                  {u.name}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  @{u.username}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            )}
+                        &times;
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Loader */}
+                  {loadingTop && (
+                    <div className="flex justify-center py-1">
+                      <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+                    </div>
+                  )}
+
+                  {/* Results or Recent Searches */}
+                  {(searchText || SearchResults.length > 0) && (
+                    <>
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-gray-500">
+                          {searchText ? "Results" : "Recent Searches"}
+                        </p>
+                        {!searchText && SearchResults.length > 0 && (
+                          <button
+                            className="text-xs text-red-500 hover:underline"
+                            onClick={() => dispatch(setSearchResults([]))}
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+
+                      {SearchResults.length === 0 ? (
+                        <p className="text-sm text-gray-400 mb-2">
+                          No match found
+                        </p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {SearchResults.map((u) => (
+                            <Link
+                              to={`/profile/${u._id}`}
+                              key={u._id}
+                              onClick={() => setOpenSearch(false)}
+                            >
+                              <li className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md">
+                                <Avatar>
+                                  <AvatarImage src={u?.profilePicture} />
+                                  <AvatarFallback>
+                                    {u?.name
+                                      ?.split(" ")
+                                      .map((n) => n[0])
+                                      .join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col items-start justify-center">
+                                  <span className="font-semibold leading-none">
+                                    {u.name}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    @{u.username}
+                                  </span>
+                                </div>
+                              </li>
+                            </Link>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Static recent (only when no search) */}
             {!searchText && (
               <>
-                <p className="text-gray-500 mb-1">Recent</p>
+                <p className="text-gray-500 mb-1">Recent Searchs</p>
                 <ul className="space-y-2 text-sm">
-                  <li className="cursor-pointer hover:text-black">
-                    raushan_kumar
-                  </li>
+                  <li className="cursor-pointer hover:text-black"></li>
                 </ul>
               </>
             )}
