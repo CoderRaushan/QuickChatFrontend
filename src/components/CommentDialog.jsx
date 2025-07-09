@@ -645,7 +645,7 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
                   <span className="text-sm">{SelectedPost?.caption}</span>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[480px]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[448px]">
                 {CommentData?.length > 0 ? (
                   CommentData.map((comment) => (
                     <Comment key={comment._id} comment={comment} />
@@ -657,7 +657,7 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 flex-col">
-                <div className="flex justify-start w-full flex-col">
+                <div className="flex justify-start w-full flex-col gap-2">
                   <div className="flex gap-4 items-center">
                     {like ? (
                       <FaHeart
