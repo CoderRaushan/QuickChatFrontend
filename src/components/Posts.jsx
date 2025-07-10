@@ -3,10 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import Post from "./Post.jsx";
 import { setPosts } from "../ReduxStore/PostSlice.js";
 import axios from "axios";
-import  usegetallposts from "../hooks/usegetallposts.jsx";
+// import  usegetallposts from "../hooks/usegetallposts.jsx";
 import { throttle } from "../Utils/Utils.js";
 import { LoaderCircle } from "lucide-react";
-
 function Posts() {
   const dispatch = useDispatch();
   const postState = useSelector((store) => store.post).post;
@@ -18,7 +17,27 @@ function Posts() {
   const BATCH = 5;
   const MainUri = import.meta.env.VITE_MainUri;
 
-  usegetallposts(); // Load initial batch
+  useEffect(() => {
+    const fetchInitialPosts = async () => {
+      const MainUri = import.meta.env.VITE_MainUri;
+      try {
+        const res = await axios.get(`${MainUri}/user/post/all?skip=0&limit=5`, {
+          withCredentials: true,
+        });
+
+        if (res.data.success) {
+          dispatch(setPosts(res.data.posts)); 
+        } else {
+          toast.error(res.data.message || "Fetch failed");
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Server error");
+      }
+    };
+    fetchInitialPosts();
+  }, [dispatch]);
+
+  // usegetallposts(); 
 
   const fetchNext = async () => {
     if (!hasMore || isLoading) return;
