@@ -1017,7 +1017,6 @@ function LeftSideBar() {
   const { likeNotification, unseenCount, followNotification } = useSelector(
     (s) => s.Notification
   );
-  console.log(SearchResults);
   /* ───────── helpers ───────── */
   const closePanels = () => {
     setOpenNotif(false);
@@ -1336,13 +1335,13 @@ function LeftSideBar() {
                   )}
 
                   {/* Results or Recent Searches */}
-                  {(searchText || SearchResults.length > 0) && (
+                  {(searchText || SearchResults?.length > 0) && (
                     <>
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-gray-500">
                           {searchText ? "Results" : "Recent Searches"}
                         </p>
-                        {!searchText && SearchResults.length > 0 && (
+                        {!searchText && SearchResults?.length > 0 && (
                           <button
                             className="text-xs text-red-500 hover:underline"
                             onClick={() => dispatch(setSearchResults([]))}
@@ -1352,7 +1351,7 @@ function LeftSideBar() {
                         )}
                       </div>
 
-                      {SearchResults.length === 0 ? (
+                      {SearchResults?.length === 0 ? (
                         <p className="text-sm text-gray-400 mb-2">
                           No match found
                         </p>

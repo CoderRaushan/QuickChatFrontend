@@ -10,7 +10,6 @@ function useGetRTMmessage() {
   const messages = useSelector((store) => store.chat.messages);
   const messagesRef = useRef([]);
   const [typingUser, setTypingUser] = useState(null); 
-  // console.log("messages",messages);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
