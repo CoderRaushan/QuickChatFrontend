@@ -1156,266 +1156,438 @@ function LeftSideBar() {
     return () => clearTimeout(handler);
   }, [searchText]);
   /* ───────── render ───────── */
+  // return (
+  //   <div className="flex">
+  //     {/* ---------------- Sidebar ---------------- */}
+  //     <div
+  //       className={`fixed top-0 left-0 h-screen bg-white border-r z-30
+  //         transition-all duration-300 ${collapsed ? "w-[70px]" : "w-[250px]"}`}
+  //     >
+  //       <div className="p-4">
+  //         {collapsed ? (
+  //           <FaInstagram size={26} className="mb-6" />
+  //         ) : (
+  //           <h1 className="font-bold text-2xl mb-6">QuickChat</h1>
+  //         )}
+  //         <div className="flex flex-col space-y-3">
+  //           {items?.map(({ icon, label }) => (
+  //             <div
+  //               key={label}
+  //               onClick={() => handleClick(label)}
+  //               title={collapsed ? label : undefined}
+  //               className="flex items-center gap-3 px-3 py-4 cursor-pointer
+  //                 hover:bg-gray-100 rounded-md relative"
+  //             >
+  //               {icon}
+  //               {!collapsed && <span>{label}</span>}
+  //               {label === "Notifications" && unseenCount > 0 && (
+  //                 <span
+  //                   className="absolute -top-1 -right-1 w-5 h-5 rounded-full
+  //                     bg-red-600 text-white text-xs flex items-center justify-center"
+  //                 >
+  //                   {unseenCount}
+  //                 </span>
+  //               )}
+  //             </div>
+  //           ))}
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     {/* ---------------- Notification Panel ---------------- */}
+  //     <AnimatePresence>
+  //       {openNotif && (
+  //         <motion.div
+  //           key="notif"
+  //           initial={{ x: "-100%" }}
+  //           animate={{ x: 0 }}
+  //           exit={{ x: "-100%" }}
+  //           transition={{ type: "tween", duration: 0.35 }}
+  //           className="fixed top-0 left-[70px] h-screen w-[350px] bg-white
+  //             border-r shadow-md p-4 z-20"
+  //         >
+  //           <h2 className="font-bold text-xl mb-4">Notifications</h2>
+  //           {[...(likeNotification || []), ...(followNotification || [])]
+  //             .length === 0 ? (
+  //             <p>No new notifications.</p>
+  //           ) : (
+  //             [...(likeNotification || []), ...(followNotification || [])]?.map(
+  //               (n, i) => (
+  //                 <div
+  //                   key={i}
+  //                   className="flex items-center gap-2 py-2 border-b"
+  //                 >
+  //                   <Avatar>
+  //                     <AvatarImage src={n?.userDetails?.profilePicture} />
+  //                     <AvatarFallback>U</AvatarFallback>
+  //                   </Avatar>
+  //                   <div className="flex-1 text-sm">
+  //                     <span className="font-bold">
+  //                       {n?.userDetails?.username}
+  //                     </span>{" "}
+  //                     liked your post
+  //                   </div>
+  //                   {user?.posts?.some((p) => p?._id === n?.postId) && (
+  //                     <Avatar
+  //                       className="h-10 w-10 cursor-pointer"
+  //                       onClick={() => {
+  //                         const post = UserProfile?.posts?.find(
+  //                           (p) => p?._id === n?.postId
+  //                         );
+  //                         dispatch(setSelectedPost(post));
+  //                         setCommentOpen(true);
+  //                       }}
+  //                     >
+  //                       <AvatarImage
+  //                         src={
+  //                           user?.posts?.find((p) => p?._id === n?.postId)
+  //                             ?.image || "default.jpg"
+  //                         }
+  //                         className="object-cover"
+  //                       />
+  //                     </Avatar>
+  //                   )}
+  //                 </div>
+  //               )
+  //             )
+  //           )}
+  //         </motion.div>
+  //       )}
+  //     </AnimatePresence>
+
+  //     {/* ---------------- Search Panel ---------------- */}
+  //     <AnimatePresence>
+  //       {openSearch && (
+  //         <motion.div
+  //           key="search"
+  //           initial={{ x: "-100%" }}
+  //           animate={{ x: 0 }}
+  //           exit={{ x: "-100%" }}
+  //           transition={{ type: "tween", duration: 0.35 }}
+  //           className="fixed top-0 left-[70px] h-screen w-[350px] bg-white
+  //             border-r shadow-md p-4 z-20 overflow-y-auto"
+  //         >
+  //           <h2 className="font-bold text-xl mb-4">Search</h2>
+
+  //           {/* Input + clear button */}
+  //           <div className="relative mb-4">
+  //             <input
+  //               type="text"
+  //               value={searchText}
+  //               onChange={(e) => setSearchText(e.target.value)}
+  //               placeholder="Search users..."
+  //               className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
+  //             />
+  //             {searchText && (
+  //               <button
+  //                 onClick={() => setSearchText("")}
+  //                 className="absolute right-2 top-1/2 -translate-y-1/2
+  //                   text-gray-500 hover:text-black text-lg"
+  //               >
+  //                 &times;
+  //               </button>
+  //             )}
+  //           </div>
+  //           {loadingTop && (
+  //             <div className="flex justify-center py-1">
+  //               <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+  //             </div>
+  //           )}
+
+  //           {/* Results (avatar + name horizontal) */}
+  //           {/* ---------------- Search Panel ---------------- */}
+  //           <AnimatePresence>
+  //             {openSearch && (
+  //               <motion.div
+  //                 key="search"
+  //                 initial={{ x: "-100%" }}
+  //                 animate={{ x: 0 }}
+  //                 exit={{ x: "-100%" }}
+  //                 transition={{ type: "tween", duration: 0.35 }}
+  //                 className="fixed top-0 left-[70px] h-screen w-[350px] bg-white border-r shadow-md p-4 z-20 overflow-y-auto"
+  //               >
+  //                 <h2 className="font-bold text-xl mb-4">Search</h2>
+
+  //                 {/* Input + clear button */}
+  //                 <div className="relative mb-4">
+  //                   <input
+  //                     type="text"
+  //                     value={searchText}
+  //                     onChange={(e) => setSearchText(e.target.value)}
+  //                     placeholder="Search users..."
+  //                     className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
+  //                   />
+  //                   {searchText && (
+  //                     <button
+  //                       onClick={() => setSearchText("")}
+  //                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black text-lg"
+  //                     >
+  //                       &times;
+  //                     </button>
+  //                   )}
+  //                 </div>
+
+  //                 {/* Loader */}
+  //                 {loadingTop && (
+  //                   <div className="flex justify-center py-1">
+  //                     <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+  //                   </div>
+  //                 )}
+
+  //                 {/* Results or Recent Searches */}
+  //                 {(searchText || SearchResults?.length > 0) && (
+  //                   <>
+  //                     <div className="flex justify-between items-center mb-1">
+  //                       <p className="text-gray-500">
+  //                         {searchText ? "Results" : "Recent Searches"}
+  //                       </p>
+  //                       {!searchText && SearchResults?.length > 0 && (
+  //                         <button
+  //                           className="text-xs text-red-500 hover:underline"
+  //                           onClick={() => dispatch(setSearchResults([]))}
+  //                         >
+  //                           Clear
+  //                         </button>
+  //                       )}
+  //                     </div>
+
+  //                     {SearchResults?.length === 0 ? (
+  //                       <p className="text-sm text-gray-400 mb-2">
+  //                         No match found
+  //                       </p>
+  //                     ) : (
+  //                       <ul className="space-y-2">
+  //                         {SearchResults?.map((u) => (
+  //                           <Link
+  //                             to={`/profile/${u._id}`}
+  //                             key={u._id}
+  //                             onClick={() => setOpenSearch(false)}
+  //                           >
+  //                             <li className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md">
+  //                               <Avatar>
+  //                                 <AvatarImage src={u?.profilePicture} />
+  //                                 <AvatarFallback>
+  //                                   {u?.name
+  //                                     ?.split(" ")
+  //                                     .map((n) => n[0])
+  //                                     .join("")}
+  //                                 </AvatarFallback>
+  //                               </Avatar>
+  //                               <div className="flex flex-col items-start justify-center">
+  //                                 <span className="font-semibold leading-none">
+  //                                   {u?.name}
+  //                                 </span>
+  //                                 <span className="text-xs text-gray-500">
+  //                                   @{u?.username}
+  //                                 </span>
+  //                               </div>
+  //                             </li>
+  //                           </Link>
+  //                         ))}
+  //                       </ul>
+  //                     )}
+  //                   </>
+  //                 )}
+  //               </motion.div>
+  //             )}
+  //           </AnimatePresence>
+
+  //           {/* Static recent (only when no search) */}
+  //           {!searchText && (
+  //             <>
+  //               <p className="text-gray-500 mb-1">Recent Searchs</p>
+  //               <ul className="space-y-2 text-sm">
+  //                 <li className="cursor-pointer hover:text-black"></li>
+  //               </ul>
+  //             </>
+  //           )}
+  //         </motion.div>
+  //       )}
+  //     </AnimatePresence>
+
+  //     {/* ---------------- Modals ---------------- */}
+  //     <CreatePost
+  //       createPostOpen={createOpen}
+  //       setcreatePostOpen={setCreateOpen}
+  //     />
+  //     <CommentDialog
+  //       CommentOpen={commentOpen}
+  //       setCommentOpen={setCommentOpen}
+  //     />
+  //   </div>
+  // );
   return (
-    <div className="flex">
-      {/* ---------------- Sidebar ---------------- */}
-      <div
-        className={`fixed top-0 left-0 h-screen bg-white border-r z-30
-          transition-all duration-300 ${collapsed ? "w-[70px]" : "w-[250px]"}`}
+  <>
+    {/* Sidebar Toggle for small screens */}
+    <div className="md:hidden fixed top-2 left-2 z-50">
+      <button
+        className="bg-gray-200 p-2 rounded-md shadow"
+        onClick={() => setCollapsed((prev) => !prev)}
       >
-        <div className="p-4">
-          {collapsed ? (
-            <FaInstagram size={26} className="mb-6" />
-          ) : (
-            <h1 className="font-bold text-2xl mb-6">QuickChat</h1>
-          )}
-          <div className="flex flex-col space-y-3">
-            {items?.map(({ icon, label }) => (
-              <div
-                key={label}
-                onClick={() => handleClick(label)}
-                title={collapsed ? label : undefined}
-                className="flex items-center gap-3 px-3 py-4 cursor-pointer
-                  hover:bg-gray-100 rounded-md relative"
-              >
-                {icon}
-                {!collapsed && <span>{label}</span>}
-                {label === "Notifications" && unseenCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full
-                      bg-red-600 text-white text-xs flex items-center justify-center"
-                  >
-                    {unseenCount}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        <FaInstagram className="text-xl" />
+      </button>
+    </div>
 
-      {/* ---------------- Notification Panel ---------------- */}
-      <AnimatePresence>
-        {openNotif && (
-          <motion.div
-            key="notif"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "tween", duration: 0.35 }}
-            className="fixed top-0 left-[70px] h-screen w-[350px] bg-white
-              border-r shadow-md p-4 z-20"
-          >
-            <h2 className="font-bold text-xl mb-4">Notifications</h2>
-            {[...(likeNotification || []), ...(followNotification || [])]
-              .length === 0 ? (
-              <p>No new notifications.</p>
-            ) : (
-              [...(likeNotification || []), ...(followNotification || [])]?.map(
-                (n, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 py-2 border-b"
-                  >
-                    <Avatar>
-                      <AvatarImage src={n?.userDetails?.profilePicture} />
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-sm">
-                      <span className="font-bold">
-                        {n?.userDetails?.username}
-                      </span>{" "}
-                      liked your post
-                    </div>
-                    {user?.posts?.some((p) => p?._id === n?.postId) && (
-                      <Avatar
-                        className="h-10 w-10 cursor-pointer"
-                        onClick={() => {
-                          const post = UserProfile?.posts?.find(
-                            (p) => p?._id === n?.postId
-                          );
-                          dispatch(setSelectedPost(post));
-                          setCommentOpen(true);
-                        }}
-                      >
-                        <AvatarImage
-                          src={
-                            user?.posts?.find((p) => p?._id === n?.postId)
-                              ?.image || "default.jpg"
-                          }
-                          className="object-cover"
-                        />
-                      </Avatar>
-                    )}
-                  </div>
-                )
-              )
-            )}
-          </motion.div>
+    {/* Sidebar */}
+    <div
+      className={`fixed top-0 left-0 h-screen bg-white border-r z-30
+        transition-all duration-300
+        ${collapsed ? "w-[70px]" : "w-[250px]"}
+        hidden md:block`}
+    >
+      <div className="p-4">
+        {collapsed ? (
+          <FaInstagram size={26} className="mb-6" />
+        ) : (
+          <h1 className="font-bold text-2xl mb-6">QuickChat</h1>
         )}
-      </AnimatePresence>
-
-      {/* ---------------- Search Panel ---------------- */}
-      <AnimatePresence>
-        {openSearch && (
-          <motion.div
-            key="search"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "tween", duration: 0.35 }}
-            className="fixed top-0 left-[70px] h-screen w-[350px] bg-white
-              border-r shadow-md p-4 z-20 overflow-y-auto"
-          >
-            <h2 className="font-bold text-xl mb-4">Search</h2>
-
-            {/* Input + clear button */}
-            <div className="relative mb-4">
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search users..."
-                className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
-              />
-              {searchText && (
-                <button
-                  onClick={() => setSearchText("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2
-                    text-gray-500 hover:text-black text-lg"
+        <div className="flex flex-col space-y-3">
+          {items?.map(({ icon, label }) => (
+            <div
+              key={label}
+              onClick={() => handleClick(label)}
+              title={collapsed ? label : undefined}
+              className="flex items-center gap-3 px-3 py-4 cursor-pointer
+                hover:bg-gray-100 rounded-md relative"
+            >
+              {icon}
+              {!collapsed && <span>{label}</span>}
+              {label === "Notifications" && unseenCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full
+                    bg-red-600 text-white text-xs flex items-center justify-center"
                 >
-                  &times;
-                </button>
+                  {unseenCount}
+                </span>
               )}
             </div>
-            {loadingTop && (
-              <div className="flex justify-center py-1">
-                <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
-              </div>
-            )}
-
-            {/* Results (avatar + name horizontal) */}
-            {/* ---------------- Search Panel ---------------- */}
-            <AnimatePresence>
-              {openSearch && (
-                <motion.div
-                  key="search"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "-100%" }}
-                  transition={{ type: "tween", duration: 0.35 }}
-                  className="fixed top-0 left-[70px] h-screen w-[350px] bg-white border-r shadow-md p-4 z-20 overflow-y-auto"
-                >
-                  <h2 className="font-bold text-xl mb-4">Search</h2>
-
-                  {/* Input + clear button */}
-                  <div className="relative mb-4">
-                    <input
-                      type="text"
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
-                      placeholder="Search users..."
-                      className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
-                    />
-                    {searchText && (
-                      <button
-                        onClick={() => setSearchText("")}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black text-lg"
-                      >
-                        &times;
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Loader */}
-                  {loadingTop && (
-                    <div className="flex justify-center py-1">
-                      <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
-                    </div>
-                  )}
-
-                  {/* Results or Recent Searches */}
-                  {(searchText || SearchResults?.length > 0) && (
-                    <>
-                      <div className="flex justify-between items-center mb-1">
-                        <p className="text-gray-500">
-                          {searchText ? "Results" : "Recent Searches"}
-                        </p>
-                        {!searchText && SearchResults?.length > 0 && (
-                          <button
-                            className="text-xs text-red-500 hover:underline"
-                            onClick={() => dispatch(setSearchResults([]))}
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-
-                      {SearchResults?.length === 0 ? (
-                        <p className="text-sm text-gray-400 mb-2">
-                          No match found
-                        </p>
-                      ) : (
-                        <ul className="space-y-2">
-                          {SearchResults?.map((u) => (
-                            <Link
-                              to={`/profile/${u._id}`}
-                              key={u._id}
-                              onClick={() => setOpenSearch(false)}
-                            >
-                              <li className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-md">
-                                <Avatar>
-                                  <AvatarImage src={u?.profilePicture} />
-                                  <AvatarFallback>
-                                    {u?.name
-                                      ?.split(" ")
-                                      .map((n) => n[0])
-                                      .join("")}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col items-start justify-center">
-                                  <span className="font-semibold leading-none">
-                                    {u?.name}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    @{u?.username}
-                                  </span>
-                                </div>
-                              </li>
-                            </Link>
-                          ))}
-                        </ul>
-                      )}
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Static recent (only when no search) */}
-            {!searchText && (
-              <>
-                <p className="text-gray-500 mb-1">Recent Searchs</p>
-                <ul className="space-y-2 text-sm">
-                  <li className="cursor-pointer hover:text-black"></li>
-                </ul>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ---------------- Modals ---------------- */}
-      <CreatePost
-        createPostOpen={createOpen}
-        setcreatePostOpen={setCreateOpen}
-      />
-      <CommentDialog
-        CommentOpen={commentOpen}
-        setCommentOpen={setCommentOpen}
-      />
+          ))}
+        </div>
+      </div>
     </div>
-  );
+
+    {/* Mobile Bottom Bar */}
+    <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t z-40 flex justify-around py-2">
+      {items?.slice(0, 5).map(({ icon, label }) => (
+        <div
+          key={label}
+          onClick={() => handleClick(label)}
+          className="flex flex-col items-center text-xs"
+        >
+          {icon}
+        </div>
+      ))}
+    </div>
+
+    {/* Notification Panel */}
+    <AnimatePresence>
+      {openNotif && (
+        <motion.div
+          key="notif"
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "-100%" }}
+          transition={{ type: "tween", duration: 0.35 }}
+          className="fixed top-0 left-[70px] md:left-[70px] h-screen w-full md:w-[350px] bg-white
+            border-r shadow-md p-4 z-20 overflow-y-auto"
+        >
+          <h2 className="font-bold text-xl mb-4">Notifications</h2>
+          {[...(likeNotification || []), ...(followNotification || [])]
+            .length === 0 ? (
+            <p>No new notifications.</p>
+          ) : (
+            [...(likeNotification || []), ...(followNotification || [])]?.map(
+              (n, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 py-2 border-b"
+                >
+                  <Avatar>
+                    <AvatarImage src={n?.userDetails?.profilePicture} />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-sm">
+                    <span className="font-bold">
+                      {n?.userDetails?.username}
+                    </span>{" "}
+                    liked your post
+                  </div>
+                  {user?.posts?.some((p) => p?._id === n?.postId) && (
+                    <Avatar
+                      className="h-10 w-10 cursor-pointer"
+                      onClick={() => {
+                        const post = UserProfile?.posts?.find(
+                          (p) => p?._id === n?.postId
+                        );
+                        dispatch(setSelectedPost(post));
+                        setCommentOpen(true);
+                      }}
+                    >
+                      <AvatarImage
+                        src={
+                          user?.posts?.find((p) => p?._id === n?.postId)
+                            ?.image || "default.jpg"
+                        }
+                        className="object-cover"
+                      />
+                    </Avatar>
+                  )}
+                </div>
+              )
+            )
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {/* Search Panel */}
+    <AnimatePresence>
+      {openSearch && (
+        <motion.div
+          key="search"
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "-100%" }}
+          transition={{ type: "tween", duration: 0.35 }}
+          className="fixed top-0 left-[70px] md:left-[70px] h-screen w-full md:w-[350px] bg-white
+            border-r shadow-md p-4 z-20 overflow-y-auto"
+        >
+          <h2 className="font-bold text-xl mb-4">Search</h2>
+          <div className="relative mb-4">
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search users..."
+              className="w-full border rounded px-3 py-2 pr-8 focus:outline-none"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2
+                  text-gray-500 hover:text-black text-lg"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          {loadingTop && (
+            <div className="flex justify-center py-1">
+              <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {/* Comment Modal */}
+    <CommentDialog open={commentOpen} setOpen={setCommentOpen} />
+
+    {/* Create Post Modal */}
+    <CreatePost open={createOpen} setOpen={setCreateOpen} />
+  </>
+);
+
 }
 
 export default LeftSideBar;
