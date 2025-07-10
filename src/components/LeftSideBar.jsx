@@ -1170,7 +1170,7 @@ function LeftSideBar() {
             <h1 className="font-bold text-2xl mb-6">QuickChat</h1>
           )}
           <div className="flex flex-col space-y-3">
-            {items.map(({ icon, label }) => (
+            {items?.map(({ icon, label }) => (
               <div
                 key={label}
                 onClick={() => handleClick(label)}
@@ -1211,7 +1211,7 @@ function LeftSideBar() {
               .length === 0 ? (
               <p>No new notifications.</p>
             ) : (
-              [...(likeNotification || []), ...(followNotification || [])].map(
+              [...(likeNotification || []), ...(followNotification || [])]?.map(
                 (n, i) => (
                   <div
                     key={i}
@@ -1227,12 +1227,12 @@ function LeftSideBar() {
                       </span>{" "}
                       liked your post
                     </div>
-                    {user?.posts?.some((p) => p._id === n?.postId) && (
+                    {user?.posts?.some((p) => p?._id === n?.postId) && (
                       <Avatar
                         className="h-10 w-10 cursor-pointer"
                         onClick={() => {
                           const post = UserProfile?.posts?.find(
-                            (p) => p._id === n?.postId
+                            (p) => p?._id === n?.postId
                           );
                           dispatch(setSelectedPost(post));
                           setCommentOpen(true);
@@ -1240,7 +1240,7 @@ function LeftSideBar() {
                       >
                         <AvatarImage
                           src={
-                            user?.posts?.find((p) => p._id === n?.postId)
+                            user?.posts?.find((p) => p?._id === n?.postId)
                               ?.image || "default.jpg"
                           }
                           className="object-cover"
@@ -1357,7 +1357,7 @@ function LeftSideBar() {
                         </p>
                       ) : (
                         <ul className="space-y-2">
-                          {SearchResults.map((u) => (
+                          {SearchResults?.map((u) => (
                             <Link
                               to={`/profile/${u._id}`}
                               key={u._id}
@@ -1375,10 +1375,10 @@ function LeftSideBar() {
                                 </Avatar>
                                 <div className="flex flex-col items-start justify-center">
                                   <span className="font-semibold leading-none">
-                                    {u.name}
+                                    {u?.name}
                                   </span>
                                   <span className="text-xs text-gray-500">
-                                    @{u.username}
+                                    @{u?.username}
                                   </span>
                                 </div>
                               </li>
