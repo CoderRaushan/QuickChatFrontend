@@ -8,6 +8,7 @@ import Home from "./components/Home.jsx";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import EditProfile from "./components/EditProfile.jsx";
 import Conversation from "./components/Conversation.jsx";
+import Explore from "./components/Explore.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +22,7 @@ function App() {
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/account/edit" element={<EditProfile />} />
             <Route path="/conversation" element={<Conversation />} />
+            <Route path="/explore" element={<Explore/>} />
           </Routes>
         </div>
       </div>
@@ -83,21 +85,21 @@ export default App;
 //   }, [user, dispatch]);
 
 //   return (
-//     <BrowserRouter>
-//       <div style={{ display: "flex" }}>
-//         <LeftSideBar />
-//         <div style={{ flex: 1 }}>
-//           <Routes>
-//             <Route path="/" element={<Home />} />
-//             <Route path="/signup" element={<SignUp />} />
-//             <Route path="/signin" element={<SignIn />} />
-//             <Route path="/profile/:id" element={<Profile />} />
-//             <Route path="/account/edit" element={<EditProfile />} />
-//             <Route path="/conversation" element={<Conversation />} />
-//           </Routes>
-//         </div>
-//       </div>
-//     </BrowserRouter>
+    // <BrowserRouter>
+    //   <div style={{ display: "flex" }}>
+    //     <LeftSideBar />
+    //     <div style={{ flex: 1 }}>
+    //       <Routes>
+    //         <Route path="/" element={<Home />} />
+    //         <Route path="/signup" element={<SignUp />} />
+    //         <Route path="/signin" element={<SignIn />} />
+    //         <Route path="/profile/:id" element={<Profile />} />
+    //         <Route path="/account/edit" element={<EditProfile />} />
+    //         <Route path="/conversation" element={<Conversation />} />
+    //       </Routes>
+    //     </div>
+    //   </div>
+    // </BrowserRouter>
 //   );
 // }
 

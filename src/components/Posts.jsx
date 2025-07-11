@@ -37,8 +37,6 @@ function Posts() {
     fetchInitialPosts();
   }, [dispatch]);
 
-  // usegetallposts(); 
-
   const fetchNext = async () => {
     if (!hasMore || isLoading) return;
 
@@ -68,7 +66,7 @@ function Posts() {
   const handleScroll = useCallback(
     throttle(() => {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      if (scrollTop + clientHeight >= scrollHeight - 50) {
+      if (scrollTop + clientHeight >= (scrollHeight - 50)) {
         fetchNext();
       }
     }, 300),
@@ -79,16 +77,6 @@ function Posts() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
-
-  // 👉 Force fetch when content height is less than viewport height
-  useEffect(() => {
-    const checkAndFetch = () => {
-      if (document.documentElement.scrollHeight <= window.innerHeight + 100 && hasMore && !isLoading) {
-        fetchNext();
-      }
-    };
-    checkAndFetch(); // On mount
-  }, [postState]); // Also run after each post update
 
   return (
     <div>
