@@ -479,11 +479,11 @@ import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment.jsx";
 import axios from "axios";
-import { setPosts } from "../ReduxStore/PostSlice.js";
+import { setPosts, setSelectedPost } from "../ReduxStore/PostSlice.js";
 import { toast } from "react-toastify";
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { MessageCircle, MoreHorizontal, Send } from "lucide-react";
-function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePost,likeCount }) {
+function CommentDialog({ CommentOpen, setCommentOpen }) {
   const [commentText, setcommentText] = useState("");
   const { SelectedPost } = useSelector((store) => store.post);
   const { user } = useSelector((store) => store.auth);
@@ -492,10 +492,48 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
   const [CommentData, setCommentData] = useState([]);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
+  const [like, setlike] = useState(SelectedPost?.likes?.includes(user?._id));
+  const [likeCount, setlikeCount] = useState(SelectedPost?.likes?.length);
+  const HandleLikeAndDislikePost = async () => {
+    try {
+      const action = like ? "dislike" : "like";
+      const MainUri = import.meta.env.VITE_MainUri;
+      const response = await axios.get(
+        `${MainUri}/user/post/${SelectedPost._id}/${action}`,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        const updatedlikes = like ? likeCount - 1 : likeCount + 1;
+        setlike(!like);
+        setlikeCount(updatedlikes);
+        const updatedpost = Posts.post.map((p) =>
+          p._id === SelectedPost._id
+            ? {
+                ...p,
+                likes: like
+                  ? p.likes.filter((id) => id !== user?._id)
+                  : [...p.likes, user._id],
+              }
+            : p
+        );
+        dispatch(setPosts(updatedpost));
+        toast.success(response.data.message || "Post Liked!");
+      } else {
+        toast.error(response.data.message || "Post Like Failed");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Internal Server Error");
+    }
+  };
 
   useEffect(() => {
-    setCommentData(SelectedPost?.comments);
-  }, [SelectedPost]);
+    setCommentData(SelectedPost?.comments || []);
+    setlike(SelectedPost?.likes?.includes(user?._id));
+    setlikeCount(SelectedPost?.likes?.length || 0);
+  }, [SelectedPost, user?._id]);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -520,14 +558,20 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
         }
       );
       if (response.data.success) {
-        setCommentData([...CommentData, response.data.comment]);
-        setcommentText("");
+        const newComment = response.data.comment;
         const updatedpost = Posts.post.map((p) =>
           p._id === SelectedPost._id
             ? { ...p, comments: [...p.comments, response.data.comment] }
             : p
         );
+        const updatedSelectedPost = {
+          ...SelectedPost,
+          comments: [...SelectedPost.comments, newComment],
+        };
         dispatch(setPosts(updatedpost));
+        dispatch(setSelectedPost(updatedSelectedPost));
+        setCommentData([...CommentData, newComment]);
+        setcommentText("");
         toast.success(response.data.message || "Comment Added!");
       }
     } catch (error) {
@@ -672,9 +716,7 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
                         className="cursor-pointer hover:text-gray-600"
                       />
                     )}
-                    <MessageCircle
-                      className="cursor-pointer hover:text-gray-600"
-                    />
+                    <MessageCircle className="cursor-pointer hover:text-gray-600" />
                     <Send className="cursor-pointer hover:text-gray-600" />
                   </div>
                   <span>{likeCount} likes</span>
@@ -686,6 +728,7 @@ function CommentDialog({ CommentOpen, setCommentOpen,like,HandleLikeAndDislikePo
                     value={commentText}
                     placeholder="Add a comment..."
                     className="w-full outline-none border border-gray-300 p-2 rounded"
+                    autoFocus
                   />
                   <Button
                     disabled={!commentText}

@@ -9,6 +9,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import EditProfile from "./components/EditProfile.jsx";
 import Conversation from "./components/Conversation.jsx";
 import Explore from "./components/Explore.jsx";
+import Test from "./components/test.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
             <Route path="/account/edit" element={<EditProfile />} />
             <Route path="/conversation" element={<Conversation />} />
             <Route path="/explore" element={<Explore/>} />
+            <Route path="/test" element={<Test/>} />
           </Routes>
         </div>
       </div>

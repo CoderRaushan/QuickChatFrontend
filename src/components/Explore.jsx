@@ -6,15 +6,22 @@ import axios from "axios";
 import { throttle } from "../Utils/Utils.js";
 import { LoaderCircle } from "lucide-react";
 import Masonry from "react-masonry-css";
+import CommentDialog from "./CommentDialog.jsx";
+import { setSelectedPost } from "../ReduxStore/PostSlice.js";
 function Explore() {
   const dispatch = useDispatch();
   const ExplorePost = useSelector((store) => store.post.ExplorePost);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const BATCH = 5;
+  const BATCH = 6;
   const MainUri = import.meta.env.VITE_MainUri;
-  console.log(ExplorePost);
+  const [CommentOpen, setCommentOpen] = useState(false);
+  const handlePostClick = (post) => {
+    dispatch(setSelectedPost(post));
+    setCommentOpen(true);
+  };
+  // console.log("like", like);
   useEffect(() => {
     const fetchInitialPosts = async () => {
       const MainUri = import.meta.env.VITE_MainUri;
@@ -30,7 +37,6 @@ function Explore() {
           console.log(res.data.posts);
         } else {
           // toast.error(res.data.message || "Fetch failed");
-          console.log(res.data.message);
         }
       } catch (err) {
         // toast.error(err.response?.data?.message || "Server error");
@@ -85,7 +91,7 @@ function Explore() {
   }, [handleScroll]);
 
   return (
-    <div className="p-4 flex-1">
+    <div className="p-4 flex-1 ml-[250px]">
       <Masonry
         breakpointCols={{
           default: 3,
@@ -99,6 +105,7 @@ function Explore() {
           <div
             key={post._id}
             className="overflow-hidden rounded-lg shadow-md bg-white"
+            onClick={() => handlePostClick(post)}
           >
             <video
               src={post?.file?.url}
@@ -110,6 +117,10 @@ function Explore() {
           </div>
         ))}
       </Masonry>
+      <CommentDialog
+        CommentOpen={CommentOpen}
+        setCommentOpen={setCommentOpen}
+      />
       {isLoading && (
         <div className="flex justify-center my-4">
           <LoaderCircle className="animate-spin text-gray-700" size={32} />
