@@ -12,7 +12,7 @@ const images = [
   "https://picsum.photos/id/1095/400/600",
 ];
 
-function ManualMasonry() {
+function Test() {
   return (
     <div className="p-4 ml-[250px]">
       <h2 className="text-2xl font-semibold mb-4">Manual Masonry Gallery</h2>
@@ -34,4 +34,4 @@ function ManualMasonry() {
   );
 }
 
-export default ManualMasonry;
+export default Test;
