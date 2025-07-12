@@ -981,11 +981,13 @@ import {
   LogInIcon,
 } from "lucide-react";
 import { FaHeart, FaRegHeart, FaInstagram } from "react-icons/fa";
+import { BsSend } from "react-icons/bs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState, useMemo, useEffect } from "react";
+import { MdOutlineExplore } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -1095,8 +1097,8 @@ function LeftSideBar() {
     () => [
       { icon: <Home className="w-6 h-6" />, label: "Home" },
       { icon: <Search className="w-6 h-6" />, label: "Search" },
-      { icon: <TrendingUp className="w-6 h-6" />, label: "Explore" },
-      { icon: <MessageCircle className="w-6 h-6" />, label: "Messages" },
+      { icon: <MdOutlineExplore className="w-6 h-6" />, label: "Explore" },
+      { icon: <BsSend className="w-6 h-6" />, label: "Messages" },
       {
         icon: collapsed ? (
           <FaHeart className="w-6 h-6" />
@@ -1219,18 +1221,21 @@ function LeftSideBar() {
                 (n, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 py-2 border-b"
+                    className="flex items-center gap-2 py-2 border-b cursor-pointer hover:bg-gray-200 "
                   >
-                    <Avatar>
-                      <AvatarImage src={n?.userDetails?.profilePicture} />
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-sm">
-                      <span className="font-bold">
-                        {n?.userDetails?.username}
-                      </span>{" "}
-                      liked your post
-                    </div>
+                    <Link to={`/profile/${n?.userDetails?._id}`} className="flex items-center gap-3 w-full py-1">
+                      <Avatar>
+                        <AvatarImage src={n?.userDetails?.profilePicture} />
+                        <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1 text-sm">
+                        <span className="font-bold">
+                          {n?.userDetails?.username}
+                        </span>{" "}
+                        {n?.message}
+                      </div>
+                    </Link>
                     {user?.posts?.some((p) => p?._id === n?.postId) && (
                       <Avatar
                         className="h-10 w-10 cursor-pointer"
@@ -1420,7 +1425,6 @@ function LeftSideBar() {
       />
     </div>
   );
-
 }
 
 export default LeftSideBar;
