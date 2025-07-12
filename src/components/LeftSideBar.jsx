@@ -1006,6 +1006,7 @@ function LeftSideBar() {
   const [createOpen, setCreateOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const [loadingTop, setloadingTop] = useState(false);
+  const navigate = useNavigate();
 
   const [searchText, setSearchText] = useState("");
   // const [SearchResults, setSearchResults] = useState([]);
@@ -1013,12 +1014,12 @@ function LeftSideBar() {
 
   /* ───────── redux state ───────── */
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { user, UserProfile, SearchResults } = useSelector((s) => s.auth);
   const { isLogin } = useSelector((s) => s.isLogin);
   const { likeNotification, unseenCount, followNotification } = useSelector(
     (s) => s.Notification
   );
+  // console.log("likeNotification,",likeNotification.post);
   /* ───────── helpers ───────── */
   const closePanels = () => {
     setOpenNotif(false);
@@ -1035,6 +1036,23 @@ function LeftSideBar() {
       navigate("/");
     } catch {
       toast.error("Logout failed");
+    }
+  };
+
+  const HandleNotificationClick = async (notification) => {
+    if (notification.type === "follow") {
+      navigate(`/profile/${notification?.userDetails?._id}`);
+    }
+    if (notification.type === "like") {
+      const res= await axios.get(
+        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${notification?.postId}`,
+        { withCredentials: true }
+      );
+      if( res.data.success) {
+        const data = res.data;
+        dispatch(setSelectedPost(data?.post || {}));
+        setCommentOpen(true);
+      }
     }
   };
 
@@ -1220,22 +1238,23 @@ function LeftSideBar() {
               [...(likeNotification || []), ...(followNotification || [])]?.map(
                 (n, i) => (
                   <div
+                    onClick={() => HandleNotificationClick(n)}
                     key={i}
                     className="flex items-center gap-2 py-2 border-b cursor-pointer hover:bg-gray-200 "
                   >
-                    <Link to={`/profile/${n?.userDetails?._id}`} className="flex items-center gap-3 w-full py-1">
-                      <Avatar>
-                        <AvatarImage src={n?.userDetails?.profilePicture} />
-                        <AvatarFallback>U</AvatarFallback>
-                      </Avatar>
+                    {/* <Link to={`/profile/${n?.userDetails?._id}`} className="flex items-center gap-3 w-full py-1"> */}
+                    <Avatar>
+                      <AvatarImage src={n?.userDetails?.profilePicture} />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
 
-                      <div className="flex-1 text-sm">
-                        <span className="font-bold">
-                          {n?.userDetails?.username}
-                        </span>{" "}
-                        {n?.message}
-                      </div>
-                    </Link>
+                    <div className="flex-1 text-sm">
+                      <span className="font-bold">
+                        {n?.userDetails?.username}
+                      </span>{" "}
+                      {n?.message}
+                    </div>
+                    {/* </Link> */}
                     {user?.posts?.some((p) => p?._id === n?.postId) && (
                       <Avatar
                         className="h-10 w-10 cursor-pointer"

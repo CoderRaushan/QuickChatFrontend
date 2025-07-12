@@ -25,6 +25,7 @@ const SocketProvider = (props) => {
         dispatch(setOnlineUsers(users));
       });
       SocketIo.on("notification", (notification) => {
+        console.log("notification", notification);
         dispatch(setLikeNotification(notification));
       });
 

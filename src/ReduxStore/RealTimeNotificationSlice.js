@@ -9,10 +9,14 @@ const RealTimeNotificationSlice = createSlice({
     },
     reducers: {
         setLikeNotification: (state, action) => {
+            console.log("action.payload",action.payload);
+           
             if (action.payload.type === "like") {
+                console.log("comming to set like notification");
                 state.likeNotification.push(action.payload);
                 state.unseenCount += 1;
             } else if (action.payload.type === "dislike") {
+                 console.log("comming to set dislike notification");
                 state.likeNotification = state.likeNotification.filter(
                     (item) => item.userId !== action.payload.userId
                 );
