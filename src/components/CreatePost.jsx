@@ -13,7 +13,6 @@ import { setPosts } from "../ReduxStore/PostSlice.js";
 function CreatePost({ createPostOpen, setcreatePostOpen }) {
   const imageRef = useRef();
   const [file, setfile] = useState("");
-  // console.log(file);
   const [caption, setcaption] = useState("");
   const [ImagePreview, setImagePreview] = useState("");
   const [loading, setloading] = useState(false);
@@ -24,7 +23,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
     const file = e.target.files?.[0];
     if (file) {
       setfile(file);
-      const dataUrl = await readFileAsDataURL(file);
+      const dataUrl = URL.createObjectURL(file);
       setImagePreview(dataUrl);
     }
   };
@@ -93,6 +92,59 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
       console.log("file not uploaded to aws s3");
     }
   };
+  const renderPreview = () => {
+    if (!file|| !ImagePreview) return null;
+
+    const type = file.type;
+
+    if (type.startsWith("image/")) {
+      return (
+        <img
+          src={ImagePreview}
+          alt="Image Preview"
+          className="w-full h-[440px] object-cover rounded-md border"
+        />
+      );
+    } else if (type.startsWith("video/")) {
+      return (
+        <video
+          src={ImagePreview}
+          controls
+          className="w-full  h-[440px] object-cover rounded-md border"
+        />
+      );
+    } else if (type.startsWith("audio/")) {
+      return (
+        <audio controls className="w-full mt-2">
+          <source src={ImagePreview} type={type} />
+          Your browser does not support the audio element.
+        </audio>
+      );
+    } else if (type === "application/pdf") {
+      return (
+        <iframe
+          src={ImagePreview}
+          className="w-full  h-[440px] border rounded-md"
+          title="PDF Preview"
+        />
+      );
+    } else {
+      return (
+        <div className="mt-2 text-center">
+          <p className="text-gray-700 mb-2">{file.name}</p>
+          <a
+            href={ImagePreview}
+            download={file.name}
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-500 underline"
+          >
+            Open / Download
+          </a>
+        </div>
+      );
+    }
+  };
   return (
     <Dialog open={createPostOpen}>
       <DialogContent onInteractOutside={() => setcreatePostOpen(false)}>
@@ -123,15 +175,15 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
           className="focus-visible:ring-transparent border-none"
           placeholder="Write a Caption..."
         />
-        {ImagePreview && (
-          <div className="w-full h-64 flex items-center justify-center ">
-            <img
-              src={ImagePreview}
-              alt=""
-              className="object-cover h-full w-full rounded-md"
-            />
-          </div>
-        )}
+        {ImagePreview &&
+          // <div className="w-full h-64 flex items-center justify-center ">
+          //   <img
+          //     src={ImagePreview}
+          //     alt=""
+          //     className="object-cover h-full w-full rounded-md"
+          //   />
+          // </div>
+          renderPreview()}
         <input
           ref={imageRef}
           type="file"
@@ -165,4 +217,3 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
   );
 }
 export default CreatePost;
-//6:35

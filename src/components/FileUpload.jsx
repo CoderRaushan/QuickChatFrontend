@@ -17,7 +17,7 @@ function FileUpload({ fileData, setFileData }) {
   const [filePreview, setfilePreview] = useState(null);
   const [TextMsg, setTextMsg] = useState("");
   const dispatch = useDispatch();
-  const { selectedUsers,user } = useSelector((store) => store.auth);
+  const { selectedUsers, user } = useSelector((store) => store.auth);
   const { messages } = useSelector((store) => store.chat);
   const [loading, setloading] = useState(false);
   const socket = useSocket();
@@ -100,6 +100,7 @@ function FileUpload({ fileData, setFileData }) {
   //   console.error("Error sending message:", error);
   //   setloading(false);
   // };
+  // console.log("filePreview",filePreview);
   const sendMessageHandler = async (ReceiverId) => {
     try {
       setloading(true);
@@ -131,7 +132,7 @@ function FileUpload({ fileData, setFileData }) {
 
       // Emit through socket with file + text
       socket.emit("send-message", {
-        conversationId:selectedUsers?.conversationId,
+        conversationId: selectedUsers?.conversationId,
         receiverId: ReceiverId,
         text: TextMsg,
         tempId,
@@ -141,6 +142,59 @@ function FileUpload({ fileData, setFileData }) {
       // toast.error(res.data.message);
       console.error("Error sending message:", error);
       setloading(false);
+    }
+  };
+  const renderPreview = () => {
+    if (!fileData || !filePreview) return null;
+
+    const type = fileData.type;
+
+    if (type.startsWith("image/")) {
+      return (
+        <img
+          src={filePreview}
+          alt="Image Preview"
+          className="w-full h-64 object-cover rounded-md border"
+        />
+      );
+    } else if (type.startsWith("video/")) {
+      return (
+        <video
+          src={filePreview}
+          controls
+          className="w-full h-64 object-cover rounded-md border"
+        />
+      );
+    } else if (type.startsWith("audio/")) {
+      return (
+        <audio controls className="w-full mt-2">
+          <source src={filePreview} type={type} />
+          Your browser does not support the audio element.
+        </audio>
+      );
+    } else if (type === "application/pdf") {
+      return (
+        <iframe
+          src={filePreview}
+          className="w-full h-96 border rounded-md"
+          title="PDF Preview"
+        />
+      );
+    } else {
+      return (
+        <div className="mt-2 text-center">
+          <p className="text-gray-700 mb-2">{fileData.name}</p>
+          <a
+            href={filePreview}
+            download={fileData.name}
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-500 underline"
+          >
+            Open / Download
+          </a>
+        </div>
+      );
     }
   };
 
@@ -156,13 +210,7 @@ function FileUpload({ fileData, setFileData }) {
           </DialogTitle>
         </DialogHeader>
 
-        {filePreview && (
-          <img
-            src={filePreview}
-            alt="Preview"
-            className="w-full h-64 object-cover rounded-md border"
-          />
-        )}
+        {filePreview && renderPreview()}
 
         <div className="flex items-center p-2 border-t border-gray-200 mt-4">
           <input
