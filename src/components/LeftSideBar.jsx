@@ -1016,7 +1016,7 @@ function LeftSideBar() {
   const dispatch = useDispatch();
   const { user, UserProfile, SearchResults } = useSelector((s) => s.auth);
   const { isLogin } = useSelector((s) => s.isLogin);
-  const { likeNotification, unseenCount, followNotification } = useSelector(
+  const { likeNotification, unseenCount, followNotification,commentNotification } = useSelector(
     (s) => s.Notification
   );
   // console.log("likeNotification,",likeNotification.post);
@@ -1044,6 +1044,17 @@ function LeftSideBar() {
       navigate(`/profile/${notification?.userDetails?._id}`);
     }
     if (notification.type === "like") {
+      const res= await axios.get(
+        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${notification?.postId}`,
+        { withCredentials: true }
+      );
+      if( res.data.success) {
+        const data = res.data;
+        dispatch(setSelectedPost(data?.post || {}));
+        setCommentOpen(true);
+      }
+    }
+    if (notification.type === "comment") {
       const res= await axios.get(
         `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${notification?.postId}`,
         { withCredentials: true }
@@ -1206,7 +1217,7 @@ function LeftSideBar() {
                 {!collapsed && <span>{label}</span>}
                 {label === "Notifications" && unseenCount > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full
+                    className="absolute  top-2 right-[175px] w-5 h-5 rounded-full
                       bg-red-600 text-white text-xs flex items-center justify-center"
                   >
                     {unseenCount}
@@ -1231,18 +1242,17 @@ function LeftSideBar() {
               border-r shadow-md p-4 z-20"
           >
             <h2 className="font-bold text-xl mb-4">Notifications</h2>
-            {[...(likeNotification || []), ...(followNotification || [])]
+            {[...(likeNotification || []), ...(followNotification || []), ...(commentNotification || [])]
               .length === 0 ? (
               <p>No new notifications.</p>
             ) : (
-              [...(likeNotification || []), ...(followNotification || [])]?.map(
+              [...(commentNotification || []),...(likeNotification || []), ...(followNotification || [])]?.map(
                 (n, i) => (
                   <div
                     onClick={() => HandleNotificationClick(n)}
                     key={i}
                     className="flex items-center gap-2 py-2 border-b cursor-pointer hover:bg-gray-200 "
                   >
-                    {/* <Link to={`/profile/${n?.userDetails?._id}`} className="flex items-center gap-3 w-full py-1"> */}
                     <Avatar>
                       <AvatarImage src={n?.userDetails?.profilePicture} />
                       <AvatarFallback>U</AvatarFallback>
@@ -1254,7 +1264,7 @@ function LeftSideBar() {
                       </span>{" "}
                       {n?.message}
                     </div>
-                    {/* </Link> */}
+                    
                     {user?.posts?.some((p) => p?._id === n?.postId) && (
                       <Avatar
                         className="h-10 w-10 cursor-pointer"
