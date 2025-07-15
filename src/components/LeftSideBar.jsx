@@ -1015,6 +1015,8 @@ function LeftSideBar() {
   /* ───────── redux state ───────── */
   const dispatch = useDispatch();
   const { user, UserProfile, SearchResults } = useSelector((s) => s.auth);
+  const chatNotifications = useSelector((state) => state.chat.chatNotifications);
+  const unreadCountMessage = Object.keys(chatNotifications || {}).length;
   const { isLogin } = useSelector((s) => s.isLogin);
   const { likeNotification, unseenCount, followNotification,commentNotification } = useSelector(
     (s) => s.Notification
@@ -1221,6 +1223,14 @@ function LeftSideBar() {
                       bg-red-600 text-white text-xs flex items-center justify-center"
                   >
                     {unseenCount}
+                  </span>
+                )}
+                {label === "Messages" && unreadCountMessage > 0 && (
+                  <span
+                    className="absolute top-2 right-[175px] w-5 h-5 rounded-full
+                      bg-red-600 text-white text-xs flex items-center justify-center"
+                  >
+                    {unreadCountMessage}
                   </span>
                 )}
               </div>

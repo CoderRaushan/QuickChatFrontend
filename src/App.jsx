@@ -9,12 +9,21 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import EditProfile from "./components/EditProfile.jsx";
 import Conversation from "./components/Conversation.jsx";
 import Explore from "./components/Explore.jsx";
+import useGetRTMmessage from "./Hooks/useGetRTMmessage.jsx";
+import { useSelector } from "react-redux";
+import { useSocket } from "./SocketContext.js";
 function App() {
+  const { user } = useSelector((store) => store.auth);
+  const socket = useSocket();
+  useGetRTMmessage();
+  // if (!user || !socket) {
+  //   return null;
+  // }
   return (
     <BrowserRouter>
       <div style={{ display: "flex" }}>
         <LeftSideBar />
-        <div style={{ flex: 1 }}> 
+        <div style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/signup" element={<SignUp />} />
@@ -22,7 +31,7 @@ function App() {
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/account/edit" element={<EditProfile />} />
             <Route path="/conversation" element={<Conversation />} />
-            <Route path="/explore" element={<Explore/>} />
+            <Route path="/explore" element={<Explore />} />
           </Routes>
         </div>
       </div>
@@ -79,29 +88,28 @@ export default App;
 //       // });
 
 //       return () => {
-//         disconnectSocket(); 
+//         disconnectSocket();
 //       };
 //     }
 //   }, [user, dispatch]);
 
 //   return (
-    // <BrowserRouter>
-    //   <div style={{ display: "flex" }}>
-    //     <LeftSideBar />
-    //     <div style={{ flex: 1 }}>
-    //       <Routes>
-    //         <Route path="/" element={<Home />} />
-    //         <Route path="/signup" element={<SignUp />} />
-    //         <Route path="/signin" element={<SignIn />} />
-    //         <Route path="/profile/:id" element={<Profile />} />
-    //         <Route path="/account/edit" element={<EditProfile />} />
-    //         <Route path="/conversation" element={<Conversation />} />
-    //       </Routes>
-    //     </div>
-    //   </div>
-    // </BrowserRouter>
+// <BrowserRouter>
+//   <div style={{ display: "flex" }}>
+//     <LeftSideBar />
+//     <div style={{ flex: 1 }}>
+//       <Routes>
+//         <Route path="/" element={<Home />} />
+//         <Route path="/signup" element={<SignUp />} />
+//         <Route path="/signin" element={<SignIn />} />
+//         <Route path="/profile/:id" element={<Profile />} />
+//         <Route path="/account/edit" element={<EditProfile />} />
+//         <Route path="/conversation" element={<Conversation />} />
+//       </Routes>
+//     </div>
+//   </div>
+// </BrowserRouter>
 //   );
 // }
 
 // export default App;
-

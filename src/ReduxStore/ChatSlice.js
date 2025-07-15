@@ -6,7 +6,8 @@ const ChatSlice = createSlice({
         onlineUsers: [],
         messages: [],
         chatHistory: [],
-        conversationMap: {}
+        conversationMap: {},
+        chatNotifications: {},
     },
     reducers:
     {
@@ -22,7 +23,10 @@ const ChatSlice = createSlice({
         setConversationMap: (state, action) => {
             state.conversationMap = action.payload;
         },
+        setChatNotifications: (state, action) => {
+            state.chatNotifications = action.payload;
+        },
     }
 });
-export const { setOnlineUsers, setMessages, setchatHistory, setConversationMap } = ChatSlice.actions;
+export const { setOnlineUsers, setMessages, setchatHistory, setConversationMap, setChatNotifications } = ChatSlice.actions;
 export default ChatSlice.reducer;

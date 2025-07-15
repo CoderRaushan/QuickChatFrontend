@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages } from "../ReduxStore/ChatSlice.js";
+import NotificationSound from "../../public/iphone_message_tone.mp3";
+import {
+  setChatNotifications,
+  setConversationMap,
+  setMessages,
+} from "../ReduxStore/ChatSlice.js";
 import { useSocket } from "../SocketContext.js";
 
 function useGetRTMmessage() {
@@ -9,19 +14,37 @@ function useGetRTMmessage() {
   const dispatch = useDispatch();
   const messages = useSelector((store) => store.chat.messages);
   const messagesRef = useRef([]);
-  const [typingUser, setTypingUser] = useState(null); 
+  const [typingUser, setTypingUser] = useState(null);
+  const chatNotifications = useSelector(
+    (store) => store.chat.chatNotifications
+  );
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
+  const playNotificationSound = () => {
+    const audio = new Audio(NotificationSound);
+    audio.play().catch((err) => console.log("Audio play error:", err));
+  };
+
   useEffect(() => {
     if (!socket || !user) return;
     const handleNewMessage = (newmsg) => {
-      if (
-        (newmsg.senderId === user._id && newmsg.receiverId === selectedUsers?._id) ||
-        (newmsg.senderId === selectedUsers?._id && newmsg.receiverId === user._id)
-      ) {
-        dispatch(setMessages([...messagesRef.current, newmsg]));
+      // console.log("Hook called");
+      // if (
+      //   (newmsg.senderId === user._id &&
+      //     newmsg.receiverId === selectedUsers?._id) ||
+      //   (newmsg.senderId === selectedUsers?._id &&
+      //     newmsg.receiverId === user._id)
+      // ) {
+      //   console.log("New message received:", newmsg);
+      // }
+      dispatch(setMessages([...messagesRef.current, newmsg]));
+      if (newmsg.senderId !== selectedUsers?._id) {
+        const updatedNotifications = { ...chatNotifications,[newmsg.senderId]: newmsg };
+        // updatedNotifications[newmsg.senderId] = newmsg.messages;
+        dispatch(setChatNotifications(updatedNotifications));
+        playNotificationSound();
       }
     };
 
