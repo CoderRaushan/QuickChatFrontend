@@ -1249,7 +1249,7 @@ function LeftSideBar() {
             exit={{ x: "-100%" }}
             transition={{ type: "tween", duration: 0.35 }}
             className="fixed top-0 left-[70px] h-screen w-[350px] bg-white
-              border-r shadow-md p-4 z-20"
+              border-r shadow-md p-4 z-20 overflow-y-auto smooth-scroll"
           >
             <h2 className="font-bold text-xl mb-4">Notifications</h2>
             {[...(likeNotification || []), ...(followNotification || []), ...(commentNotification || [])]

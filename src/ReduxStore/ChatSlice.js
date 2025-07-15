@@ -8,6 +8,7 @@ const ChatSlice = createSlice({
         chatHistory: [],
         conversationMap: {},
         chatNotifications: {},
+        typingUserId: null
     },
     reducers:
     {
@@ -19,14 +20,17 @@ const ChatSlice = createSlice({
         },
         setchatHistory: (state, action) => {
             state.chatHistory = action.payload;
-        }, 
+        },
         setConversationMap: (state, action) => {
             state.conversationMap = action.payload;
         },
         setChatNotifications: (state, action) => {
             state.chatNotifications = action.payload;
         },
+        setTypingUser: (state, action) => {
+            state.typingUserId = action.payload;
+        }
     }
 });
-export const { setOnlineUsers, setMessages, setchatHistory, setConversationMap, setChatNotifications } = ChatSlice.actions;
+export const { setOnlineUsers, setMessages, setchatHistory, setConversationMap, setChatNotifications, setTypingUser } = ChatSlice.actions;
 export default ChatSlice.reducer;

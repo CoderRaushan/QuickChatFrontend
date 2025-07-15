@@ -707,7 +707,6 @@ function Conversation() {
           })}
           
       </section>
-
       {/* Chat Section */}
       {selectedUsers ? (
         <section className="flex-1 flex flex-col justify-between">
@@ -742,6 +741,7 @@ function Conversation() {
               type="text"
               className="flex-1 mr-2 bg-gray-100 p-2 rounded-md"
               placeholder="Type a message..."
+              autoFocus
             />
             <Button onClick={() => sendMessageHandler(selectedUsers?._id)}>
               Send
@@ -751,6 +751,7 @@ function Conversation() {
               ref={inputfileRef}
               onChange={HandleFIleclick}
               className="hidden"
+              autoFocus
             />
             <FiPaperclip
               className="absolute right-[100px] top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer size-5"

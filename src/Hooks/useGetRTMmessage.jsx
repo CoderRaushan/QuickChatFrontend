@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import NotificationSound from "../../public/iphone_message_tone.mp3";
+import { setTypingUser } from "../ReduxStore/ChatSlice";
 import {
   setChatNotifications,
   setConversationMap,
@@ -21,6 +22,8 @@ function useGetRTMmessage() {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  
 
   const playNotificationSound = () => {
     const audio = new Audio(NotificationSound);
