@@ -12,13 +12,11 @@ import Explore from "./components/Explore.jsx";
 import useGetRTMmessage from "./Hooks/useGetRTMmessage.jsx";
 import { useSelector } from "react-redux";
 import { useSocket } from "./SocketContext.js";
+import StoryPage from "./components/story/StoryPage.jsx";
 function App() {
   const { user } = useSelector((store) => store.auth);
   const socket = useSocket();
   useGetRTMmessage();
-  // if (!user || !socket) {
-  //   return null;
-  // }
   return (
     <BrowserRouter>
       <div style={{ display: "flex" }}>
@@ -32,6 +30,7 @@ function App() {
             <Route path="/account/edit" element={<EditProfile />} />
             <Route path="/conversation" element={<Conversation />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/story/:id" element={<StoryPage />} />
           </Routes>
         </div>
       </div>

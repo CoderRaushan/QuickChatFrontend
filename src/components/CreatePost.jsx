@@ -58,22 +58,19 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
       if (response) {
         try {
           const res = await axios.post(
-            `${MainUri}/user/post/add`,
+            `${MainUri}/user/story/upload`,
             {
               caption,
-              fileUrl,
-              mimetype: file.type,
-              filename: file.name,
-              size: file.size,
+              mediaUrl: fileUrl,
+              mediaType: file.type.split('/')[0],
             },
             {
               withCredentials: true,
             }
           );
           if (res.data.success) {
-            // console.log("post data",res.data.post);
-            dispatch(setPosts([res.data.post, ...post]));
-            toast.success(res.data.message || "post successfully");
+            console.log(res.data);
+            toast.success(res.data.message || "Story uploaded successfully");
             setcaption("");
             setfile("");
             setImagePreview("");
@@ -82,6 +79,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
             toast.error(res.data.message || "post failed");
           }
         } catch (error) {
+          console.log(error);
           toast.error(error.response.data.message || "post falied");
         } finally {
           setloading(false);

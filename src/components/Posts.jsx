@@ -6,6 +6,7 @@ import axios from "axios";
 // import  usegetallposts from "../hooks/usegetallposts.jsx";
 import { throttle } from "../Utils/Utils.js";
 import { LoaderCircle } from "lucide-react";
+import { toast } from "react-toastify";
 function Posts() {
   const dispatch = useDispatch();
   const postState = useSelector((store) => store.post).post;
