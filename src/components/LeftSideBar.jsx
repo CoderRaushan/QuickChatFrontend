@@ -1015,12 +1015,17 @@ function LeftSideBar() {
   /* ───────── redux state ───────── */
   const dispatch = useDispatch();
   const { user, UserProfile, SearchResults } = useSelector((s) => s.auth);
-  const chatNotifications = useSelector((state) => state.chat.chatNotifications);
+  const chatNotifications = useSelector(
+    (state) => state.chat.chatNotifications
+  );
   const unreadCountMessage = Object.keys(chatNotifications || {}).length;
   const { isLogin } = useSelector((s) => s.isLogin);
-  const { likeNotification, unseenCount, followNotification,commentNotification } = useSelector(
-    (s) => s.Notification
-  );
+  const {
+    likeNotification,
+    unseenCount,
+    followNotification,
+    commentNotification,
+  } = useSelector((s) => s.Notification);
   // console.log("likeNotification,",likeNotification.post);
   /* ───────── helpers ───────── */
   const closePanels = () => {
@@ -1046,22 +1051,26 @@ function LeftSideBar() {
       navigate(`/profile/${notification?.userDetails?._id}`);
     }
     if (notification.type === "like") {
-      const res= await axios.get(
-        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${notification?.postId}`,
+      const res = await axios.get(
+        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${
+          notification?.postId
+        }`,
         { withCredentials: true }
       );
-      if( res.data.success) {
+      if (res.data.success) {
         const data = res.data;
         dispatch(setSelectedPost(data?.post || {}));
         setCommentOpen(true);
       }
     }
     if (notification.type === "comment") {
-      const res= await axios.get(
-        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${notification?.postId}`,
+      const res = await axios.get(
+        `${import.meta.env.VITE_MainUri}/user/post/get/specificpost/${
+          notification?.postId
+        }`,
         { withCredentials: true }
       );
-      if( res.data.success) {
+      if (res.data.success) {
         const data = res.data;
         dispatch(setSelectedPost(data?.post || {}));
         setCommentOpen(true);
@@ -1111,7 +1120,12 @@ function LeftSideBar() {
         break;
 
       case "Login":
-        navigate("/signin");
+        useEffect(() => {
+          if (user) {
+            navigate("/signin");
+          }
+        }, [user]);
+        
         break;
 
       case "Logout":
@@ -1252,52 +1266,57 @@ function LeftSideBar() {
               border-r shadow-md p-4 z-20 overflow-y-auto smooth-scroll"
           >
             <h2 className="font-bold text-xl mb-4">Notifications</h2>
-            {[...(likeNotification || []), ...(followNotification || []), ...(commentNotification || [])]
-              .length === 0 ? (
+            {[
+              ...(likeNotification || []),
+              ...(followNotification || []),
+              ...(commentNotification || []),
+            ].length === 0 ? (
               <p>No new notifications.</p>
             ) : (
-              [...(commentNotification || []),...(likeNotification || []), ...(followNotification || [])]?.map(
-                (n, i) => (
-                  <div
-                    onClick={() => HandleNotificationClick(n)}
-                    key={i}
-                    className="flex items-center gap-2 py-2 border-b cursor-pointer hover:bg-gray-200 "
-                  >
-                    <Avatar>
-                      <AvatarImage src={n?.userDetails?.profilePicture} />
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
+              [
+                ...(commentNotification || []),
+                ...(likeNotification || []),
+                ...(followNotification || []),
+              ]?.map((n, i) => (
+                <div
+                  onClick={() => HandleNotificationClick(n)}
+                  key={i}
+                  className="flex items-center gap-2 py-2 border-b cursor-pointer hover:bg-gray-200 "
+                >
+                  <Avatar>
+                    <AvatarImage src={n?.userDetails?.profilePicture} />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
 
-                    <div className="flex-1 text-sm">
-                      <span className="font-bold">
-                        {n?.userDetails?.username}
-                      </span>{" "}
-                      {n?.message}
-                    </div>
-                    
-                    {user?.posts?.some((p) => p?._id === n?.postId) && (
-                      <Avatar
-                        className="h-10 w-10 cursor-pointer"
-                        onClick={() => {
-                          const post = UserProfile?.posts?.find(
-                            (p) => p?._id === n?.postId
-                          );
-                          dispatch(setSelectedPost(post));
-                          setCommentOpen(true);
-                        }}
-                      >
-                        <AvatarImage
-                          src={
-                            user?.posts?.find((p) => p?._id === n?.postId)
-                              ?.image || "default.jpg"
-                          }
-                          className="object-cover"
-                        />
-                      </Avatar>
-                    )}
+                  <div className="flex-1 text-sm">
+                    <span className="font-bold">
+                      {n?.userDetails?.username}
+                    </span>{" "}
+                    {n?.message}
                   </div>
-                )
-              )
+
+                  {user?.posts?.some((p) => p?._id === n?.postId) && (
+                    <Avatar
+                      className="h-10 w-10 cursor-pointer"
+                      onClick={() => {
+                        const post = UserProfile?.posts?.find(
+                          (p) => p?._id === n?.postId
+                        );
+                        dispatch(setSelectedPost(post));
+                        setCommentOpen(true);
+                      }}
+                    >
+                      <AvatarImage
+                        src={
+                          user?.posts?.find((p) => p?._id === n?.postId)
+                            ?.image || "default.jpg"
+                        }
+                        className="object-cover"
+                      />
+                    </Avatar>
+                  )}
+                </div>
+              ))
             )}
           </motion.div>
         )}

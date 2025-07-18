@@ -53,7 +53,7 @@ const SignupForm = () => {
         username: formData.username,
         email: formData.email,
       };
-      const MainUri= import.meta.env.VITE_MainUri;
+      const MainUri = import.meta.env.VITE_MainUri;
       const verificationUri = `${MainUri}/auth/verify-email`;
       const response = await axios.post(verificationUri, verificationData);
       if (response.data.success) {
@@ -103,11 +103,15 @@ const SignupForm = () => {
         password: formData.password,
         name: formData.name,
       };
-      const MainUri= import.meta.env.VITE_MainUri;
+      const MainUri = import.meta.env.VITE_MainUri;
       const signupUri = `${MainUri}/auth/signup`;
       const response = await axios.post(signupUri, userdata);
       if (response.data.success) {
-        navigate("/signin");
+        useEffect(() => {
+          if (user) {
+            navigate("/signin");
+          }
+        }, [user]);
         setFormData({
           username: "",
           email: "",
@@ -133,7 +137,7 @@ const SignupForm = () => {
       setloading(false);
     }
   };
-  const MainUri= import.meta.env.VITE_MainUri;
+  const MainUri = import.meta.env.VITE_MainUri;
   const callGoogle = async (e) => {
     const GoogleUri = `${MainUri}/auth/google`;
     e.preventDefault();
@@ -145,7 +149,7 @@ const SignupForm = () => {
   };
   const callYoutube = async (e) => {
     e.preventDefault();
-    window.location.href =`${MainUri}/auth/youtube`; ;
+    window.location.href = `${MainUri}/auth/youtube`;
   };
   // useEffect(() => {
   //   if (user) {

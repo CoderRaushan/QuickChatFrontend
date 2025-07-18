@@ -38,26 +38,35 @@ function EditProfile() {
   };
   const EditProfileHandler = async () => {
     try {
-      const MainUri=import.meta.env.VITE_MainUri;
+      const MainUri = import.meta.env.VITE_MainUri;
       setLoading(true);
       const formData = new FormData();
       formData.append("profilePicture", input.profilePicture);
       formData.append("bio", input.bio);
-      formData.append("gender",input.gender);
+      formData.append("gender", input.gender);
 
-      const response = await axios.put(`${MainUri}/user/edit/profile`, formData, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (response.data.success) {
-        const updatedData={
-          ...user,
-          profilePicture:response.data.user.profilePicture,
-          bio:response.data.user.bio,
-          gender:response.data.user.gender,
+      const response = await axios.put(
+        `${MainUri}/user/edit/profile`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
         }
+      );
+      if (response.data.success) {
+        const updatedData = {
+          ...user,
+          profilePicture: response.data.user.profilePicture,
+          bio: response.data.user.bio,
+          gender: response.data.user.gender,
+        };
         dispatch(setAuthUser(updatedData));
-        navigate(`/profile/${user._id}`);
+        // navigate(`/profile/${user._id}`);
+        useEffect(() => {
+          if (user) {
+            navigate(`/profile/${user._id}`);
+          }
+        }, [user]);
 
         toast.success(response.data.message || "Profile Edited");
       } else {
