@@ -1120,11 +1120,7 @@ function LeftSideBar() {
         break;
 
       case "Login":
-        useEffect(() => {
-          if (user) {
-            navigate("/signin");
-          }
-        }, [user]);
+        navigate("/signin");
         
         break;
 
