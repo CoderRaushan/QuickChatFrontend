@@ -2,10 +2,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { setselectedUsers } from "../ReduxStore/authSlice.js";
 import { Button } from "@/components/ui/button";
 import { MessageCircleCode, ArrowLeft } from "lucide-react";
+import { MdVideoCall } from "react-icons/md";
 import Messages from "./Messages.jsx";
 import {
   setChatNotifications,
@@ -104,8 +105,11 @@ function Conversation() {
     fetchConversations();
   }, [user]);
 
+  // philhal ke liye isko aisa rakhe hai 
+  // selected user null nahi ho  raha hai 
+  // future me problem hui to deknenge
   useEffect(() => {
-    return () => dispatch(setselectedUsers(null));
+    // return () => dispatch(setselectedUsers(null));
   }, [dispatch]);
 
   const sendMessageHandler = async (ReceiverId) => {
@@ -705,7 +709,6 @@ function Conversation() {
               </div>
             );
           })}
-          
       </section>
       {/* Chat Section */}
       {selectedUsers ? (
@@ -717,12 +720,21 @@ function Conversation() {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
+
             <Avatar>
               <AvatarImage src={selectedUsers?.profilePicture} />
-              <AvatarFallback>{selectedUsers?.username[0]}</AvatarFallback>
+              <AvatarFallback>{selectedUsers?.username?.[0]}</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col font-medium">
-              {selectedUsers?.username}
+
+            <div className="flex flex items-center gap-[750px]">
+              <span className="font-medium text-sm">
+                {selectedUsers?.username}
+              </span>
+              <button className="text-blue-600 hover:text-blue-800 mt-1">
+                <Link to={`/call/${selectedUsers?._id}`}>
+                  <MdVideoCall size={28} />
+                </Link>
+              </button>
             </div>
           </div>
           <Messages selectedUsers={selectedUsers} />

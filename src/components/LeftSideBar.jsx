@@ -1035,14 +1035,20 @@ function LeftSideBar() {
 
   const logoutUser = async () => {
     try {
-      const uri = import.meta.env.VITE_MainUri;
-      await axios.post(`${uri}/user/signout`, {}, { withCredentials: true });
-      dispatch(setAuthUser(null));
-      dispatch(setisLogin(false));
-      toast.success("Logged out");
-      navigate("/");
-    } catch {
+      navigate("/signin");
+      if (user) {
+        const uri = import.meta.env.VITE_MainUri;
+        await axios.post(`${uri}/user/signout`, {}, { withCredentials: true });
+        dispatch(setAuthUser(null));
+        dispatch(setisLogin(false));
+        toast.success("Logged out");
+        navigate("/");
+      } else {
+        navigate("/signin");
+      }
+    } catch (error) {
       toast.error("Logout failed");
+      console.log(error);
     }
   };
 
@@ -1121,7 +1127,7 @@ function LeftSideBar() {
 
       case "Login":
         navigate("/signin");
-        
+
         break;
 
       case "Logout":
