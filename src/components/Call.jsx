@@ -896,6 +896,611 @@
 
 // export default Call;
 
+// import React, { useEffect, useRef, useState, useCallback } from "react";
+// import { useSelector } from "react-redux";
+// import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+// import { FaPhone, FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from "react-icons/fa";
+// import { IoMdClose } from "react-icons/io";
+// import { useSocket } from "../SocketContext.js";
+// import { useNavigate, useParams } from "react-router-dom";
+
+// const ICE_SERVERS = [
+//   { urls: "stun:stun.l.google.com:19302" },
+//   { urls: "stun:stun1.l.google.com:19302" },
+// ];
+
+// function Call() {
+//   const socket = useSocket();
+//   const { user, selectedUsers } = useSelector((store) => store.auth);
+  
+//   // UI States
+//   const [showOverlay, setShowOverlay] = useState(false);
+//   const [incomingCall, setIncomingCall] = useState(null);
+//   const [isCalling, setIsCalling] = useState(false);
+//   const [callStatus, setCallStatus] = useState(""); // "calling", "connecting", "connected", "ended"
+  
+//   // Media States
+//   const [localStream, setLocalStream] = useState(null);
+//   const [remoteStream, setRemoteStream] = useState(null);
+//   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+//   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  
+//   // Refs
+//   const localVideoRef = useRef(null);
+//   const remoteVideoRef = useRef(null);
+//   const peerRef = useRef(null);
+//   const isInitializingRef = useRef(false);
+//   const callTimeoutRef = useRef(null);
+  
+//   const navigate = useNavigate();
+//   const { id: callUserId } = useParams();
+
+//   // Initialize local media stream
+//   const initLocalStream = useCallback(async () => {
+//     if (isInitializingRef.current || localStream) return localStream;
+    
+//     isInitializingRef.current = true;
+//     try {
+//       const stream = await navigator.mediaDevices.getUserMedia({
+//         video: { width: 1280, height: 720 },
+//         audio: {
+//           echoCancellation: true,
+//           noiseSuppression: true,
+//           autoGainControl: true
+//         },
+//       });
+      
+//       setLocalStream(stream);
+//       console.log("Local stream initialized successfully");
+//       return stream;
+//     } catch (err) {
+//       console.error("Error getting media stream:", err);
+//       alert("Failed to access camera/microphone. Please check permissions.");
+//       throw err;
+//     } finally {
+//       isInitializingRef.current = false;
+//     }
+//   }, [localStream]);
+
+//   // Initialize component
+//   useEffect(() => {
+//     initLocalStream().catch(console.error);
+    
+//     return () => {
+//       cleanupCall();
+//     };
+//   }, [initLocalStream]);
+
+//   // Attach streams to video elements
+//   useEffect(() => {
+//     if (localVideoRef.current && localStream) {
+//       localVideoRef.current.srcObject = localStream;
+//     }
+//   }, [localStream]);
+
+//   useEffect(() => {
+//     if (remoteVideoRef.current && remoteStream) {
+//       remoteVideoRef.current.srcObject = remoteStream;
+//     }
+//   }, [remoteStream]);
+
+//   // Create peer connection
+//   const createPeerConnection = useCallback((remoteUserId, stream = null) => {
+//     console.log("Creating peer connection for:", remoteUserId);
+    
+//     // Clean up existing connection
+//     if (peerRef.current) {
+//       try {
+//         peerRef.current.ontrack = null;
+//         peerRef.current.onicecandidate = null;
+//         peerRef.current.onconnectionstatechange = null;
+//         peerRef.current.close();
+//       } catch (err) {
+//         console.warn("Error closing existing peer connection:", err);
+//       }
+//     }
+
+//     const pc = new RTCPeerConnection({ 
+//       iceServers: ICE_SERVERS,
+//       iceCandidatePoolSize: 10
+//     });
+
+//     // Add local tracks
+//     const streamToUse = stream || localStream;
+//     if (streamToUse) {
+//       streamToUse.getTracks().forEach((track) => {
+//         console.log("Adding track:", track.kind);
+//         pc.addTrack(track, streamToUse);
+//       });
+//     } else {
+//       console.warn("No local stream available when creating peer connection");
+//     }
+
+//     // Handle remote stream
+//     pc.ontrack = (event) => {
+//       console.log("Received remote track:", event.track.kind);
+//       if (event.streams && event.streams[0]) {
+//         setRemoteStream(event.streams[0]);
+//         setCallStatus("connected");
+//       }
+//     };
+
+//     // Handle ICE candidates
+//     pc.onicecandidate = (event) => {
+//       if (event.candidate) {
+//         console.log("Sending ICE candidate");
+//         socket.emit("icecandidate", {
+//           candidate: event.candidate,
+//           to: remoteUserId,
+//         });
+//       }
+//     };
+
+//     // Handle connection state changes
+//     pc.onconnectionstatechange = () => {
+//       console.log("Connection state:", pc.connectionState);
+//       switch (pc.connectionState) {
+//         case "connected":
+//           setCallStatus("connected");
+//           break;
+//         case "disconnected":
+//         case "failed":
+//         case "closed":
+//           setCallStatus("ended");
+//           setTimeout(cleanupCall, 1000);
+//           break;
+//         case "connecting":
+//           setCallStatus("connecting");
+//           break;
+//       }
+//     };
+
+//     // Handle ICE connection state
+//     pc.oniceconnectionstatechange = () => {
+//       console.log("ICE connection state:", pc.iceConnectionState);
+//       if (pc.iceConnectionState === "failed") {
+//         console.log("ICE connection failed, attempting restart");
+//         pc.restartIce();
+//       }
+//     };
+
+//     peerRef.current = pc;
+//     return pc;
+//   }, [localStream, socket]);
+
+//   // Socket event handlers
+//   useEffect(() => {
+//     if (!socket) return;
+
+//     const handleIncomingCall = ({ from, userInfo }) => {
+//       console.log("Incoming call from:", from, userInfo);
+//       setIncomingCall({ from, userInfo });
+//       setCallStatus("incoming");
+//     };
+
+//     const handleOffer = async ({ from, offer }) => {
+//       console.log("Received offer from:", from);
+//       try {
+//         // Ensure we have local stream before handling offer
+//         const stream = localStream || await initLocalStream();
+//         const pc = createPeerConnection(from, stream);
+        
+//         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+//         const answer = await pc.createAnswer();
+//         await pc.setLocalDescription(answer);
+
+//         socket.emit("answer", {
+//           from: user._id,
+//           to: from,
+//           answer: pc.localDescription,
+//         });
+
+//         setShowOverlay(true);
+//         setIsCalling(true);
+//         setCallStatus("connecting");
+//       } catch (err) {
+//         console.error("Error handling offer:", err);
+//         alert("Failed to handle incoming call");
+//       }
+//     };
+
+//     const handleAnswer = async ({ from, answer }) => {
+//       console.log("Received answer from:", from);
+//       const pc = peerRef.current;
+//       if (!pc) {
+//         console.warn("No peer connection when receiving answer");
+//         return;
+//       }
+
+//       try {
+//         if (pc.signalingState === "have-local-offer") {
+//           await pc.setRemoteDescription(new RTCSessionDescription(answer));
+//           setCallStatus("connecting");
+//         } else {
+//           console.warn("Unexpected signaling state:", pc.signalingState);
+//         }
+//       } catch (err) {
+//         console.error("Failed to set remote answer:", err);
+//       }
+//     };
+
+//     const handleICECandidate = async (candidate) => {
+//       if (!candidate || !peerRef.current) return;
+      
+//       try {
+//         await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+//         console.log("Added ICE candidate");
+//       } catch (err) {
+//         console.error("Error adding ICE candidate:", err);
+//       }
+//     };
+
+//     const handleCallAccepted = async ({ from }) => {
+//       console.log("Call accepted by:", from);
+//       try {
+//         // Clear any existing timeout
+//         if (callTimeoutRef.current) {
+//           clearTimeout(callTimeoutRef.current);
+//         }
+
+//         // Ensure we have local stream
+//         const stream = localStream || await initLocalStream();
+//         const pc = createPeerConnection(from, stream);
+        
+//         const offer = await pc.createOffer({
+//           offerToReceiveAudio: true,
+//           offerToReceiveVideo: true,
+//         });
+//         await pc.setLocalDescription(offer);
+
+//         socket.emit("offer", {
+//           from: user._id,
+//           to: from,
+//           offer: pc.localDescription,
+//         });
+
+//         setShowOverlay(true);
+//         setIsCalling(true);
+//         setCallStatus("connecting");
+//       } catch (err) {
+//         console.error("Error on call accepted:", err);
+//         alert("Failed to establish call connection");
+//       }
+//     };
+
+//     const handleCallRejected = ({ from }) => {
+//       console.log("Call rejected by:", from);
+//       alert("Call was rejected");
+//       cleanupCall();
+//     };
+
+//     // Register socket listeners
+//     socket.on("incoming-call", handleIncomingCall);
+//     socket.on("offer", handleOffer);
+//     socket.on("answer", handleAnswer);
+//     socket.on("icecandidate", handleICECandidate);
+//     socket.on("call-accepted", handleCallAccepted);
+//     socket.on("call-rejected", handleCallRejected);
+
+//     return () => {
+//       socket.off("incoming-call", handleIncomingCall);
+//       socket.off("offer", handleOffer);
+//       socket.off("answer", handleAnswer);
+//       socket.off("icecandidate", handleICECandidate);
+//       socket.off("call-accepted", handleCallAccepted);
+//       socket.off("call-rejected", handleCallRejected);
+//     };
+//   }, [socket, user, localStream, createPeerConnection, initLocalStream]);
+
+//   // Cleanup function
+//   const cleanupCall = useCallback(() => {
+//     console.log("Cleaning up call");
+    
+//     setShowOverlay(false);
+//     setIsCalling(false);
+//     setIncomingCall(null);
+//     setCallStatus("");
+    
+//     // Clear timeout
+//     if (callTimeoutRef.current) {
+//       clearTimeout(callTimeoutRef.current);
+//       callTimeoutRef.current = null;
+//     }
+
+//     // Clean up peer connection
+//     if (peerRef.current) {
+//       try {
+//         peerRef.current.ontrack = null;
+//         peerRef.current.onicecandidate = null;
+//         peerRef.current.onconnectionstatechange = null;
+//         peerRef.current.close();
+//       } catch (err) {
+//         console.warn("Error closing peer connection:", err);
+//       }
+//       peerRef.current = null;
+//     }
+
+//     // Clean up remote stream
+//     if (remoteStream) {
+//       remoteStream.getTracks().forEach(track => {
+//         try {
+//           track.stop();
+//         } catch (err) {
+//           console.warn("Error stopping remote track:", err);
+//         }
+//       });
+//       setRemoteStream(null);
+//     }
+
+//     // Note: We keep localStream active for potential future calls
+//     // Only stop it when component unmounts
+//   }, [remoteStream]);
+
+//   // Accept incoming call
+//   const acceptCall = useCallback(async () => {
+//     if (!incomingCall) return;
+    
+//     console.log("Accepting call from:", incomingCall.from);
+//     try {
+//       // Ensure we have local stream
+//       const stream = localStream || await initLocalStream();
+//       createPeerConnection(incomingCall.from, stream);
+      
+//       socket.emit("call-accepted", {
+//         from: user._id,
+//         to: incomingCall.from,
+//       });
+      
+//       setIncomingCall(null);
+//       setShowOverlay(true);
+//       setIsCalling(true);
+//       setCallStatus("connecting");
+//     } catch (err) {
+//       console.error("Error accepting call:", err);
+//       alert("Failed to accept call");
+//     }
+//   }, [incomingCall, localStream, createPeerConnection, initLocalStream, socket, user._id]);
+
+//   // Reject incoming call
+//   const rejectCall = useCallback(() => {
+//     if (!incomingCall) return;
+    
+//     console.log("Rejecting call from:", incomingCall.from);
+//     socket.emit("call-rejected", {
+//       from: user._id,
+//       to: incomingCall.from,
+//     });
+    
+//     setIncomingCall(null);
+//     cleanupCall();
+//   }, [incomingCall, socket, user._id, cleanupCall]);
+
+//   // Start outgoing call
+//   const startCall = useCallback(async () => {
+//     if (!selectedUsers || !selectedUsers._id) {
+//       alert("Please select a user to call.");
+//       return;
+//     }
+
+//     console.log("Starting call to:", selectedUsers._id);
+//     try {
+//       // Ensure we have local stream
+//       const stream = localStream || await initLocalStream();
+//       createPeerConnection(selectedUsers._id, stream);
+      
+//       socket.emit("call-user", {
+//         from: user._id,
+//         to: selectedUsers._id,
+//         userInfo: {
+//           name: user.name,
+//           profilePicture: user.profilePicture,
+//         },
+//       });
+
+//       setCallStatus("calling");
+      
+//       // Set timeout for call response (30 seconds)
+//       callTimeoutRef.current = setTimeout(() => {
+//         alert("Call timeout - no response");
+//         cleanupCall();
+//       }, 30000);
+      
+//     } catch (err) {
+//       console.error("Error starting call:", err);
+//       alert("Failed to start call");
+//     }
+//   }, [selectedUsers, localStream, createPeerConnection, initLocalStream, socket, user, cleanupCall]);
+
+//   // Toggle audio
+//   const toggleAudio = useCallback(() => {
+//     if (localStream) {
+//       const audioTrack = localStream.getAudioTracks()[0];
+//       if (audioTrack) {
+//         audioTrack.enabled = !audioTrack.enabled;
+//         setIsAudioEnabled(audioTrack.enabled);
+//       }
+//     }
+//   }, [localStream]);
+
+//   // Toggle video
+//   const toggleVideo = useCallback(() => {
+//     if (localStream) {
+//       const videoTrack = localStream.getVideoTracks()[0];
+//       if (videoTrack) {
+//         videoTrack.enabled = !videoTrack.enabled;
+//         setIsVideoEnabled(videoTrack.enabled);
+//       }
+//     }
+//   }, [localStream]);
+
+//   // End call
+//   const handleCloseOverlay = useCallback(() => {
+//     cleanupCall();
+//     navigate("/conversation");
+//   }, [cleanupCall, navigate]);
+
+//   // Cleanup on unmount
+//   useEffect(() => {
+//     return () => {
+//       if (localStream) {
+//         localStream.getTracks().forEach(track => {
+//           try {
+//             track.stop();
+//           } catch (err) {
+//             console.warn("Error stopping local track:", err);
+//           }
+//         });
+//       }
+//       cleanupCall();
+//     };
+//   }, [localStream, cleanupCall]);
+
+//   return (
+//     <div className="flex flex-col items-center mt-40 ml-[250px] gap-2">
+//       <div className="flex flex-col items-center h-[400px] bg-gray-500 w-[380px] text-white pt-10 rounded-[12px] gap-6">
+//         <Avatar className="h-40 w-40">
+//           <AvatarImage
+//             src={selectedUsers?.profilePicture}
+//             className="object-cover w-full h-full rounded-full"
+//           />
+//           <AvatarFallback>U</AvatarFallback>
+//         </Avatar>
+//         <div className="flex flex-col text-[26px] font-bold text-center">
+//           {selectedUsers?.name}
+//           <span className="text-[16px] font-semibold">
+//             {callStatus === "calling" ? "Calling..." : "Ready to call?"}
+//           </span>
+//         </div>
+//         <button
+//           onClick={startCall}
+//           disabled={callStatus === "calling"}
+//           className="bg-black text-white p-3 rounded-full hover:scale-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
+//         >
+//           <FaPhone size={28} />
+//         </button>
+//       </div>
+
+//       {/* Incoming Call Modal */}
+//       {incomingCall && (
+//         <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+//           <div className="bg-white rounded-lg p-6 text-center max-w-sm w-full mx-4">
+//             <div className="mb-4">
+//               <Avatar className="h-20 w-20 mx-auto mb-4">
+//                 <AvatarImage
+//                   src={incomingCall.userInfo?.profilePicture}
+//                   className="object-cover w-full h-full rounded-full"
+//                 />
+//                 <AvatarFallback>{incomingCall.userInfo?.name?.[0] || "U"}</AvatarFallback>
+//               </Avatar>
+//               <h2 className="text-xl font-bold text-gray-800">
+//                 {incomingCall.userInfo?.name || "Someone"} is calling...
+//               </h2>
+//             </div>
+//             <div className="flex gap-4 justify-center">
+//               <button
+//                 onClick={acceptCall}
+//                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full transition"
+//               >
+//                 <FaPhone size={20} />
+//               </button>
+//               <button
+//                 onClick={rejectCall}
+//                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full transition"
+//               >
+//                 <IoMdClose size={20} />
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Video Call Overlay */}
+//       {showOverlay && (
+//         <div className="fixed inset-0 bg-black flex justify-center items-center z-50">
+//           {/* Call Status */}
+//           <div className="absolute top-4 left-4 text-white z-10">
+//             <span className="bg-black bg-opacity-50 px-3 py-1 rounded">
+//               Status: {callStatus || "connecting..."}
+//             </span>
+//           </div>
+
+//           {/* Close Button */}
+//           <button
+//             onClick={handleCloseOverlay}
+//             className="absolute top-4 right-4 text-white text-3xl hover:text-red-500 transition z-10"
+//           >
+//             <IoMdClose />
+//           </button>
+
+//           {/* Video Containers */}
+//           <div className="flex gap-4 h-full w-full p-4">
+//             {/* Remote Video (Main) */}
+//             <div className="flex-1 bg-gray-900 rounded-lg shadow-lg relative overflow-hidden">
+//               <video
+//                 ref={remoteVideoRef}
+//                 autoPlay
+//                 playsInline
+//                 className="w-full h-full object-cover"
+//               />
+//               {!remoteStream && (
+//                 <div className="absolute inset-0 flex items-center justify-center text-white">
+//                   <div className="text-center">
+//                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+//                     <p>Waiting for remote video...</p>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* Local Video (Picture-in-Picture) */}
+//             <div className="w-80 h-60 bg-gray-900 rounded-lg shadow-lg relative overflow-hidden">
+//               <video
+//                 ref={localVideoRef}
+//                 autoPlay
+//                 playsInline
+//                 muted
+//                 className="w-full h-full object-cover"
+//               />
+//               {!isVideoEnabled && (
+//                 <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+//                   <FaVideoSlash className="text-white text-2xl" />
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* Controls */}
+//           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4 z-10">
+//             <button
+//               onClick={toggleAudio}
+//               className={`p-4 rounded-full transition ${
+//                 isAudioEnabled ? "bg-gray-700 hover:bg-gray-600" : "bg-red-600 hover:bg-red-700"
+//               } text-white`}
+//             >
+//               {isAudioEnabled ? <FaMicrophone size={20} /> : <FaMicrophoneSlash size={20} />}
+//             </button>
+//             <button
+//               onClick={toggleVideo}
+//               className={`p-4 rounded-full transition ${
+//                 isVideoEnabled ? "bg-gray-700 hover:bg-gray-600" : "bg-red-600 hover:bg-red-700"
+//               } text-white`}
+//             >
+//               {isVideoEnabled ? <FaVideo size={20} /> : <FaVideoSlash size={20} />}
+//             </button>
+//             <button
+//               onClick={handleCloseOverlay}
+//               className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition"
+//             >
+//               <IoMdClose size={20} />
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default Call;
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
@@ -907,6 +1512,8 @@ import { useNavigate, useParams } from "react-router-dom";
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
 ];
 
 function Call() {
@@ -931,6 +1538,7 @@ function Call() {
   const peerRef = useRef(null);
   const isInitializingRef = useRef(false);
   const callTimeoutRef = useRef(null);
+  const currentCallIdRef = useRef(null);
   
   const navigate = useNavigate();
   const { id: callUserId } = useParams();
@@ -942,7 +1550,11 @@ function Call() {
     isInitializingRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720 },
+        video: { 
+          width: { ideal: 1280 }, 
+          height: { ideal: 720 },
+          facingMode: "user"
+        },
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -968,8 +1580,14 @@ function Call() {
     
     return () => {
       cleanupCall();
+      // Stop local stream on unmount
+      if (localStream) {
+        localStream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
     };
-  }, [initLocalStream]);
+  }, []);
 
   // Attach streams to video elements
   useEffect(() => {
@@ -994,6 +1612,7 @@ function Call() {
         peerRef.current.ontrack = null;
         peerRef.current.onicecandidate = null;
         peerRef.current.onconnectionstatechange = null;
+        peerRef.current.oniceconnectionstatechange = null;
         peerRef.current.close();
       } catch (err) {
         console.warn("Error closing existing peer connection:", err);
@@ -1020,6 +1639,7 @@ function Call() {
     pc.ontrack = (event) => {
       console.log("Received remote track:", event.track.kind);
       if (event.streams && event.streams[0]) {
+        console.log("Setting remote stream");
         setRemoteStream(event.streams[0]);
         setCallStatus("connected");
       }
@@ -1027,7 +1647,7 @@ function Call() {
 
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
-      if (event.candidate) {
+      if (event.candidate && socket) {
         console.log("Sending ICE candidate");
         socket.emit("icecandidate", {
           candidate: event.candidate,
@@ -1047,7 +1667,7 @@ function Call() {
         case "failed":
         case "closed":
           setCallStatus("ended");
-          setTimeout(cleanupCall, 1000);
+          setTimeout(() => cleanupCall(), 1000);
           break;
         case "connecting":
           setCallStatus("connecting");
@@ -1058,9 +1678,18 @@ function Call() {
     // Handle ICE connection state
     pc.oniceconnectionstatechange = () => {
       console.log("ICE connection state:", pc.iceConnectionState);
-      if (pc.iceConnectionState === "failed") {
-        console.log("ICE connection failed, attempting restart");
-        pc.restartIce();
+      switch (pc.iceConnectionState) {
+        case "connected":
+        case "completed":
+          setCallStatus("connected");
+          break;
+        case "failed":
+          console.log("ICE connection failed, attempting restart");
+          pc.restartIce();
+          break;
+        case "disconnected":
+          setCallStatus("connecting");
+          break;
       }
     };
 
@@ -1072,9 +1701,10 @@ function Call() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleIncomingCall = ({ from, userInfo }) => {
+    const handleIncomingCall = ({ callId, from, userInfo }) => {
       console.log("Incoming call from:", from, userInfo);
-      setIncomingCall({ from, userInfo });
+      currentCallIdRef.current = callId;
+      setIncomingCall({ callId, from, userInfo });
       setCallStatus("incoming");
     };
 
@@ -1124,7 +1754,7 @@ function Call() {
       }
     };
 
-    const handleICECandidate = async (candidate) => {
+    const handleICECandidate = async ({ candidate }) => {
       if (!candidate || !peerRef.current) return;
       
       try {
@@ -1135,13 +1765,16 @@ function Call() {
       }
     };
 
-    const handleCallAccepted = async ({ from }) => {
+    const handleCallAccepted = async ({ from, callId }) => {
       console.log("Call accepted by:", from);
       try {
         // Clear any existing timeout
         if (callTimeoutRef.current) {
           clearTimeout(callTimeoutRef.current);
+          callTimeoutRef.current = null;
         }
+
+        currentCallIdRef.current = callId;
 
         // Ensure we have local stream
         const stream = localStream || await initLocalStream();
@@ -1168,9 +1801,26 @@ function Call() {
       }
     };
 
-    const handleCallRejected = ({ from }) => {
+    const handleCallRejected = ({ from, callId }) => {
       console.log("Call rejected by:", from);
       alert("Call was rejected");
+      cleanupCall();
+    };
+
+    const handleCallEnded = ({ callId }) => {
+      console.log("Call ended:", callId);
+      cleanupCall();
+    };
+
+    const handleCallTimeout = ({ callId }) => {
+      console.log("Call timeout:", callId);
+      alert("Call timeout - no response");
+      cleanupCall();
+    };
+
+    const handleCallFailed = ({ reason }) => {
+      console.log("Call failed:", reason);
+      alert(`Call failed: ${reason}`);
       cleanupCall();
     };
 
@@ -1181,6 +1831,9 @@ function Call() {
     socket.on("icecandidate", handleICECandidate);
     socket.on("call-accepted", handleCallAccepted);
     socket.on("call-rejected", handleCallRejected);
+    socket.on("call-ended", handleCallEnded);
+    socket.on("call-timeout", handleCallTimeout);
+    socket.on("call-failed", handleCallFailed);
 
     return () => {
       socket.off("incoming-call", handleIncomingCall);
@@ -1189,6 +1842,9 @@ function Call() {
       socket.off("icecandidate", handleICECandidate);
       socket.off("call-accepted", handleCallAccepted);
       socket.off("call-rejected", handleCallRejected);
+      socket.off("call-ended", handleCallEnded);
+      socket.off("call-timeout", handleCallTimeout);
+      socket.off("call-failed", handleCallFailed);
     };
   }, [socket, user, localStream, createPeerConnection, initLocalStream]);
 
@@ -1207,12 +1863,23 @@ function Call() {
       callTimeoutRef.current = null;
     }
 
+    // Emit call ended to server
+    if (currentCallIdRef.current && socket) {
+      socket.emit("call-ended", {
+        callId: currentCallIdRef.current,
+        to: selectedUsers?._id || incomingCall?.from
+      });
+    }
+
+    currentCallIdRef.current = null;
+
     // Clean up peer connection
     if (peerRef.current) {
       try {
         peerRef.current.ontrack = null;
         peerRef.current.onicecandidate = null;
         peerRef.current.onconnectionstatechange = null;
+        peerRef.current.oniceconnectionstatechange = null;
         peerRef.current.close();
       } catch (err) {
         console.warn("Error closing peer connection:", err);
@@ -1234,11 +1901,11 @@ function Call() {
 
     // Note: We keep localStream active for potential future calls
     // Only stop it when component unmounts
-  }, [remoteStream]);
+  }, [remoteStream, socket, selectedUsers, incomingCall]);
 
   // Accept incoming call
   const acceptCall = useCallback(async () => {
-    if (!incomingCall) return;
+    if (!incomingCall || !socket) return;
     
     console.log("Accepting call from:", incomingCall.from);
     try {
@@ -1249,6 +1916,7 @@ function Call() {
       socket.emit("call-accepted", {
         from: user._id,
         to: incomingCall.from,
+        callId: incomingCall.callId
       });
       
       setIncomingCall(null);
@@ -1263,12 +1931,13 @@ function Call() {
 
   // Reject incoming call
   const rejectCall = useCallback(() => {
-    if (!incomingCall) return;
+    if (!incomingCall || !socket) return;
     
     console.log("Rejecting call from:", incomingCall.from);
     socket.emit("call-rejected", {
       from: user._id,
       to: incomingCall.from,
+      callId: incomingCall.callId
     });
     
     setIncomingCall(null);
@@ -1277,16 +1946,19 @@ function Call() {
 
   // Start outgoing call
   const startCall = useCallback(async () => {
-    if (!selectedUsers || !selectedUsers._id) {
+    if (!selectedUsers || !selectedUsers._id || !socket) {
       alert("Please select a user to call.");
       return;
+    }
+
+    if (callStatus === "calling" || isCalling) {
+      return; // Prevent multiple calls
     }
 
     console.log("Starting call to:", selectedUsers._id);
     try {
       // Ensure we have local stream
       const stream = localStream || await initLocalStream();
-      createPeerConnection(selectedUsers._id, stream);
       
       socket.emit("call-user", {
         from: user._id,
@@ -1301,15 +1973,17 @@ function Call() {
       
       // Set timeout for call response (30 seconds)
       callTimeoutRef.current = setTimeout(() => {
-        alert("Call timeout - no response");
-        cleanupCall();
+        if (callStatus === "calling") {
+          alert("Call timeout - no response");
+          cleanupCall();
+        }
       }, 30000);
       
     } catch (err) {
       console.error("Error starting call:", err);
       alert("Failed to start call");
     }
-  }, [selectedUsers, localStream, createPeerConnection, initLocalStream, socket, user, cleanupCall]);
+  }, [selectedUsers, localStream, initLocalStream, socket, user, callStatus, isCalling, cleanupCall]);
 
   // Toggle audio
   const toggleAudio = useCallback(() => {
@@ -1339,22 +2013,6 @@ function Call() {
     navigate("/conversation");
   }, [cleanupCall, navigate]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (localStream) {
-        localStream.getTracks().forEach(track => {
-          try {
-            track.stop();
-          } catch (err) {
-            console.warn("Error stopping local track:", err);
-          }
-        });
-      }
-      cleanupCall();
-    };
-  }, [localStream, cleanupCall]);
-
   return (
     <div className="flex flex-col items-center mt-40 ml-[250px] gap-2">
       <div className="flex flex-col items-center h-[400px] bg-gray-500 w-[380px] text-white pt-10 rounded-[12px] gap-6">
@@ -1363,17 +2021,19 @@ function Call() {
             src={selectedUsers?.profilePicture}
             className="object-cover w-full h-full rounded-full"
           />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback>
+            {selectedUsers?.name?.charAt(0)?.toUpperCase() || "U"}
+          </AvatarFallback>
         </Avatar>
         <div className="flex flex-col text-[26px] font-bold text-center">
-          {selectedUsers?.name}
+          {selectedUsers?.name || "Unknown User"}
           <span className="text-[16px] font-semibold">
             {callStatus === "calling" ? "Calling..." : "Ready to call?"}
           </span>
         </div>
         <button
           onClick={startCall}
-          disabled={callStatus === "calling"}
+          disabled={callStatus === "calling" || isCalling}
           className="bg-black text-white p-3 rounded-full hover:scale-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <FaPhone size={28} />
@@ -1390,7 +2050,9 @@ function Call() {
                   src={incomingCall.userInfo?.profilePicture}
                   className="object-cover w-full h-full rounded-full"
                 />
-                <AvatarFallback>{incomingCall.userInfo?.name?.[0] || "U"}</AvatarFallback>
+                <AvatarFallback>
+                  {incomingCall.userInfo?.name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
               <h2 className="text-xl font-bold text-gray-800">
                 {incomingCall.userInfo?.name || "Someone"} is calling...
