@@ -11,6 +11,7 @@ function Feed() {
   const MainUri = import.meta.env.VITE_MainUri;
   const [followings, setFollowings] = useState([]);
   const [followingsIds, setFollowingsIds] = useState([]);
+  const [createOpen, setCreateOpen] = useState(false);
   useEffect(() => {
     setFollowingsIds(user?.following?.map((f) => f._id) || []);
   }, [user?.following]);
@@ -73,7 +74,7 @@ function Feed() {
   }, [followingsIds]);
 
   // console.log("Followings:", followingsIds);
-  const [createOpen, setCreateOpen] = useState(false);
+
   // const followings = [
   //   { _id: "3hseiower8oimjefois", username: "abcd", name: "ABCD" },
   //   { _id: "3hsdfiower8oimjeddis", username: "dfgh", name: "EFGH" },
@@ -106,6 +107,7 @@ function Feed() {
         <CreatePost
           createPostOpen={createOpen}
           setcreatePostOpen={setCreateOpen}
+          target={"Story"}
         />
       </div>
       <Posts />

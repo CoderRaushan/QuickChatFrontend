@@ -1478,6 +1478,7 @@ function LeftSideBar() {
       <CreatePost
         createPostOpen={createOpen}
         setcreatePostOpen={setCreateOpen}
+        target={"Create"}
       />
       <CommentDialog
         CommentOpen={commentOpen}

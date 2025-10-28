@@ -10,7 +10,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "../ReduxStore/PostSlice.js";
-function CreatePost({ createPostOpen, setcreatePostOpen }) {
+function CreatePost({ createPostOpen, setcreatePostOpen, target }) {
   const imageRef = useRef();
   const [file, setfile] = useState("");
   const [caption, setcaption] = useState("");
@@ -55,14 +55,48 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
         },
         body: file,
       });
-      if (response) {
+      if (response && target === "Story") {
         try {
           const res = await axios.post(
             `${MainUri}/user/story/upload`,
             {
               caption,
               mediaUrl: fileUrl,
-              mediaType: file.type.split('/')[0],
+              mediaType: file.type.split("/")[0],
+            },
+            {
+              withCredentials: true,
+            }
+          );
+          if (res.data.success) {
+            console.log(res.data);
+            toast.success(res.data.message || "Story uploaded successfully");
+            setcaption("");
+            setfile("");
+            setImagePreview("");
+            setcreatePostOpen(false);
+          } else {
+            toast.error(res.data.message || "post failed");
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.response.data.message || "post falied");
+        } finally {
+          setloading(false);
+          setcreatePostOpen(false);
+        }
+      } else if (response && target === "Create") {
+        try {
+          const res = await axios.post(
+            `${MainUri}/user/post/add`,
+            {
+              caption,
+              fileUrl,
+              mimetype: file.type,
+              filename: file.name,
+              size: file.size,
+              mediaUrl: fileUrl,
+              mediaType: file.type.split("/")[0],
             },
             {
               withCredentials: true,
@@ -91,7 +125,7 @@ function CreatePost({ createPostOpen, setcreatePostOpen }) {
     }
   };
   const renderPreview = () => {
-    if (!file|| !ImagePreview) return null;
+    if (!file || !ImagePreview) return null;
 
     const type = file.type;
 
