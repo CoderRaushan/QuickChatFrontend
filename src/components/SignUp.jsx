@@ -12,9 +12,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import quickchatImg from "@/assets/quickchat.png"; // Adjust the path as necessary
-import GooglePhoto from "@/assets/SignUpLogin/google.png";
-import GitHubPhoto from "@/assets/SignUpLogin/github.png";
-import YoutubePhoto from "@/assets/SignUpLogin/youtube.webp";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 const SignupForm = () => {
@@ -107,11 +104,12 @@ const SignupForm = () => {
       const signupUri = `${MainUri}/auth/signup`;
       const response = await axios.post(signupUri, userdata);
       if (response.data.success) {
-        useEffect(() => {
-          if (user) {
-            navigate("/signin");
-          }
-        }, [user]);
+        // useEffect(() => {
+        //   if (user) {
+        //     navigate("/signin");
+        //   }
+        // }, [user]);
+        navigate("/signin");
         setFormData({
           username: "",
           email: "",
@@ -121,11 +119,11 @@ const SignupForm = () => {
           name: "",
         });
         setIsCodeSent(false);
-        // console.log(response.data.message);
+        console.log(response.data.message);
         // alert(response.data.message);
         toast.success(response.data.message || "Signup successfylly!");
       } else {
-        // console.log(response.data.message);
+        console.log(response.data.message);
         // alert(response.data.message);
         toast.error(response.data.message || "Signup error!");
       }
@@ -137,20 +135,7 @@ const SignupForm = () => {
       setloading(false);
     }
   };
-  const MainUri = import.meta.env.VITE_MainUri;
-  const callGoogle = async (e) => {
-    const GoogleUri = `${MainUri}/auth/google`;
-    e.preventDefault();
-    window.location.href = GoogleUri;
-  };
-  const callGithub = async (e) => {
-    e.preventDefault();
-    window.location.href = `${MainUri}/auth/github`;
-  };
-  const callYoutube = async (e) => {
-    e.preventDefault();
-    window.location.href = `${MainUri}/auth/youtube`;
-  };
+
   // useEffect(() => {
   //   if (user) {
   //     navigate("/");
@@ -235,27 +220,6 @@ const SignupForm = () => {
                   </Button>
                 )}
                 <div className="flex flex-col space-y-4">
-                  <Button
-                    onClick={callGoogle}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={GooglePhoto} className="w-6 h-6" alt="Google" />{" "}
-                    Sign in with Google
-                  </Button>
-                  <Button
-                    onClick={callGithub}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={GitHubPhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                    Sign in with GitHub
-                  </Button>
-                  <Button
-                    onClick={callYoutube}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={YoutubePhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                    Sign in with Youtube
-                  </Button>
                   <span className="flex items-center justify-center">
                     Already have an account?{" "}
                     <Link
@@ -318,31 +282,23 @@ const SignupForm = () => {
                     className="mt-1"
                   />
                 </div>
-                <Button className="w-full mt-4" type="submit">
-                  Signup
-                </Button>
+                {loading ? (
+                  <Button
+                    disabled
+                    className="flex items-center justify-center w-full"
+                  >
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please Wait!
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full mt-4"
+                    type="submit"
+                  >
+                    Sign Up
+                  </Button>
+                )}
                 <div className="flex flex-col space-y-4">
-                  <Button
-                    onClick={callGoogle}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={GooglePhoto} className="w-6 h-6" alt="Google" />{" "}
-                    Sign in with Google
-                  </Button>
-                  <Button
-                    onClick={callGithub}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={GitHubPhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                    Sign in with GitHub
-                  </Button>
-                  <Button
-                    onClick={callYoutube}
-                    className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                  >
-                    <img src={YoutubePhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                    Sign in with Youtube
-                  </Button>
                   <span className="flex items-center justify-center">
                     Already have an account?{" "}
                     <Link

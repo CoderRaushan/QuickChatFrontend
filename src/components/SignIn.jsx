@@ -10,9 +10,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import quickchatImg from "@/assets/quickchat.png"; // Adjust the path as necessary
-import GooglePhoto from "@/assets/SignUpLogin/google.png";
-import GitHubPhoto from "@/assets/SignUpLogin/github.png";
-import YoutubePhoto from "@/assets/SignUpLogin/youtube.webp";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
@@ -70,7 +67,7 @@ const Navigate=useNavigate();
       }
     } catch (error) {
       console.error("Error:", error.response.data.message || error.message);
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || error.message);
     } finally {
       setloading(false);
     }
@@ -158,27 +155,6 @@ const Navigate=useNavigate();
                 </Button>
                 )}
               <div className="flex flex-col space-y-4">
-                <Button
-                  onClick={callGoogle}
-                  className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                >
-                  <img src={GooglePhoto} className="w-6 h-6" alt="Google" />{" "}
-                  Sign in with Google
-                </Button>
-                <Button
-                  onClick={callGithub}
-                  className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                >
-                  <img src={GitHubPhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                  Sign in with GitHub
-                </Button>
-                <Button
-                  onClick={callYoutube}
-                  className="flex items-center gap-2 bg-white text-black border border-gray-300 shadow-md hover:bg-gray-100 p-3 rounded-lg"
-                >
-                  <img src={YoutubePhoto} className="w-6 h-6" alt="GitHub" />{" "}
-                  Sign in with Youtube
-                </Button>
                 <span className="flex items-center justify-center">
                   Don't have an account?{" "}
                   <Link to="/signup" className="text-blue-800 hover:underline">
