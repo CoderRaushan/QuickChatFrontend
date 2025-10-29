@@ -363,8 +363,8 @@ function Messages({ selectedUsers }) {
     return messages
       .filter(
         (m) =>
-          (m.senderId === user._id && m.receiverId === selectedUsers._id) ||
-          (m.senderId === selectedUsers._id && m.receiverId === user._id)
+          (m?.senderId === user?._id && m?.receiverId === selectedUsers?._id) ||
+          (m?.senderId === selectedUsers?._id && m?.receiverId === user?._id)
       )
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   }, [messages, selectedUsers, user]);

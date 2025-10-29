@@ -103,48 +103,12 @@ import useGetRTMmessage from "./Hooks/useGetRTMmessage.jsx";
 import { useSelector } from "react-redux";
 import { useSocket } from "./SocketContext.js";
 import StoryPage from "./components/story/StoryPage.jsx";
-import Call from "./components/Call.jsx";
-import IncomingCallPopup from "./components/IncomingCallPopup.jsx";
 import { useState, useEffect } from "react";
 
 function App() {
   const { user } = useSelector((store) => store.auth);
   const socket = useSocket();
-  const [incomingCall, setIncomingCall] = useState(null);
   const navigate = useNavigate(); // ✅ Works now that App is inside <BrowserRouter>
-
-  useEffect(() => {
-    if (!socket || !user) return;
-
-    socket.on("incoming-call", ({ from, userInfo }) => {
-      setIncomingCall({ from, userInfo });
-    });
-
-    return () => {
-      socket.off("incoming-call");
-    };
-  }, [socket, user]);
-
-  const acceptCall = () => {
-    if (incomingCall) {
-      socket.emit("call-accepted", {
-        from: incomingCall.from,
-        to: user._id,
-      });
-      navigate(`/call/${incomingCall.from}`);
-      setIncomingCall(null);
-    }
-  };
-
-  const rejectCall = () => {
-    if (incomingCall) {
-      socket.emit("call-rejected", {
-        from: incomingCall.from,
-        to: user._id,
-      });
-      setIncomingCall(null);
-    }
-  };
 
   useGetRTMmessage();
 
@@ -161,18 +125,8 @@ function App() {
           <Route path="/conversation" element={<Conversation />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/story/:id" element={<StoryPage />} />
-          <Route path="/call/:id" element={<Call />} />
         </Routes>
       </div>
-
-      {/* Incoming Call UI */}
-      {incomingCall && (
-        <IncomingCallPopup
-          caller={incomingCall.userInfo}
-          onAccept={acceptCall}
-          onReject={rejectCall}
-        />
-      )}
     </div>
   );
 }

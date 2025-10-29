@@ -58,7 +58,7 @@ function Conversation() {
     );
     if (seenMessages.length > 0) {
       seenMessages.forEach((msg) => {
-        socket.emit("message-seen", msg._id);
+        socket.emit("", msg._id);
       });
     }
   }, [messages, user?._id, selectedUsers, socket]);
